@@ -1,0 +1,174 @@
+# Configuration for Fraud Detection System
+
+# Paths
+paths:
+  data:
+    raw: "data/raw"
+    processed: "data/processed"
+    interim: "data/interim"
+    external: "data/external"
+  
+  models: "models"
+  reports: "reports"
+  logs: "logs"
+
+# Dataset
+dataset:
+  name: "fraudTest.csv"
+  source: "kaggle"
+  kaggle_dataset: "kartik2112/fraud-detection"
+  
+  # Train/Test split
+  test_size: 0.2
+  validation_size: 0.1
+  random_state: 42
+  stratify: true
+
+# Data Cleaning
+cleaning:
+  remove_duplicates: true
+  handle_missing:
+    strategy: "drop"  # drop, mean, median, mode, forward_fill
+    threshold: 0.05   # Maximum proportion of missing values allowed
+  
+  outlier_detection:
+    method: "iqr"     # iqr, z-score
+    threshold: 3.0
+  
+  date_format: "%Y-%m-%d %H:%M:%S"
+  
+# Feature Engineering
+features:
+  temporal:
+    extract_hour: true
+    extract_day_of_week: true
+    extract_month: true
+    extract_is_weekend: true
+    extract_is_night: true  # 22:00 - 6:00
+    
+    # Time-based features
+    calculate_time_since_last: true
+    calculate_transaction_velocity: true
+    
+  geographic:
+    calculate_distance_from_home: true
+    calculate_distance_from_last: true
+    calculate_velocity: true  # km/h between transactions
+    
+    # Anomaly thresholds
+    max_reasonable_velocity: 800  # km/h (plane speed)
+    
+  behavioral:
+    calculate_amount_stats: true
+    calculate_frequency: true
+    calculate_merchant_diversity: true
+    calculate_category_distribution: true
+    
+    # Windows for rolling statistics
+    rolling_windows: [7, 14, 30]  # days
+    
+  nlp:
+    enabled: true
+    extract_merchant_keywords: true
+    suspicious_keywords:
+      - "international"
+      - "overseas"
+      - "wire"
+      - "crypto"
+      - "bitcoin"
+
+# Model Training
+model:
+  # Supervised Model
+  supervised:
+    algorithm: "xgboost"  # xgboost, random_forest, logistic
+    
+    xgboost:
+      n_estimators: 100
+      max_depth: 6
+      learning_rate: 0.1
+      subsample: 0.8
+      colsample_bytree: 0.8
+      scale_pos_weight: 10  # For imbalanced data
+      
+    random_forest:
+      n_estimators: 100
+      max_depth: 10
+      min_samples_split: 5
+      
+  # Unsupervised Model
+  unsupervised:
+    algorithm: "isolation_forest"
+    
+    isolation_forest:
+      n_estimators: 100
+      contamination: 0.01  # Expected proportion of fraud
+      max_samples: "auto"
+      
+  # Ensemble
+  ensemble:
+    enabled: true
+    weights:
+      supervised: 0.7
+      unsupervised: 0.3
+
+# Evaluation
+evaluation:
+  metrics:
+    - "precision"
+    - "recall"
+    - "f1"
+    - "roc_auc"
+    - "average_precision"
+  
+  precision_at_k: [10, 50, 100, 500]
+  
+  cv_folds: 5
+  
+# Anomaly Detection Rules
+rules:
+  # Amount-based
+  high_amount_threshold_percentile: 95
+  low_amount_threshold: 0
+  
+  # Time-based
+  unusual_hours:
+    start: 2  # 2 AM
+    end: 6    # 6 AM
+  
+  # Geographic
+  impossible_velocity: 800  # km/h
+  unusual_distance_percentile: 95
+  
+  # Frequency
+  max_transactions_per_hour: 10
+  max_transactions_per_day: 50
+
+# API
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: true
+  workers: 4
+
+# UI
+ui:
+  port: 8501
+  title: "Fraud Detection Dashboard"
+  layout: "wide"
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/fraud_detection.log"
+
+# Alerts
+alerts:
+  high_risk_threshold: 0.8
+  medium_risk_threshold: 0.5
+  
+  notification:
+    enabled: false
+    email: ""
+    slack_webhook: ""
