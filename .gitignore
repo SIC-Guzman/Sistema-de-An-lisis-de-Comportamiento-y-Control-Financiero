@@ -1,0 +1,36 @@
+# Datos
+data/raw/
+data/processed/
+data/interim/
+data/external/
+*.csv
+*.parquet
+
+# Archivos grandes
+*.zip
+*.tar.gz
+*.7z
+
+# Modelos
+models/*.pkl
+models/*.joblib
+
+# Python
+__pycache__/
+*.pyc
+venv/
+env/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Proyectos temporales
+SC-proyect/
