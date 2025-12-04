@@ -1,12 +1,4 @@
-"""
-Complete preprocessing pipeline for fraud detection system.
-Loads, cleans, validates, and saves processed data.
 
-Usage:
-    python scripts/preprocess_pipeline.py
-    python scripts/preprocess_pipeline.py --sample 0.1  # Use 10% sample
-    python scripts/preprocess_pipeline.py --skip-download  # If data already downloaded
-"""
 
 import sys
 import argparse
@@ -70,10 +62,10 @@ def download_dataset():
             [sys.executable, "scripts/download_dataset.py"],
             check=True
         )
-        logger.info("✅ Dataset downloaded successfully")
+        logger.info("Dataset downloaded successfully")
         return True
     except subprocess.CalledProcessError:
-        logger.error("❌ Dataset download failed")
+        logger.error("Dataset download failed")
         return False
 
 
@@ -143,7 +135,7 @@ def process_dataset(
         return df
     
     if not is_valid:
-        logger.warning("⚠️  Data validation failed, but proceeding with cleaning...")
+        logger.warning("Data validation failed, but proceeding with cleaning...")
     
     # Clean data
     cleaner = DataCleaner()
@@ -166,9 +158,9 @@ def process_dataset(
     is_valid_after = validate_data(df_clean, logger)
     
     if is_valid_after:
-        logger.info("✅ Cleaned data passes validation")
+        logger.info("Cleaned data passes validation")
     else:
-        logger.warning("⚠️  Cleaned data still has validation issues")
+        logger.warning("Cleaned data still has validation issues")
     
     # Save processed data
     processed_dir = Path(config.get('paths.data.processed'))
@@ -179,7 +171,7 @@ def process_dataset(
     logger.info(f"\nSaving processed data to {output_file}...")
     loader.save_data(df_clean, output_file, file_type=output_format)
     
-    logger.info(f"✅ Saved {len(df_clean):,} rows")
+    logger.info(f"Saved {len(df_clean):,} rows")
     
     return df_clean
 
@@ -208,7 +200,7 @@ def generate_summary_report(train_df, test_df, logger):
     logger.info(f"  Duplicates (train): {train_df.duplicated().sum()}")
     logger.info(f"  Duplicates (test): {test_df.duplicated().sum()}")
     
-    logger.info("\n✅ Preprocessing pipeline complete!")
+    logger.info("\nPreprocessing pipeline complete!")
     logger.info("\nNext steps:")
     logger.info("  1. Explore data: jupyter notebook notebooks/01_exploratory_analysis.ipynb")
     logger.info("  2. Feature engineering: Start Sprint 2")
