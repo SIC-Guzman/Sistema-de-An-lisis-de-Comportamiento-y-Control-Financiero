@@ -1,4 +1,3 @@
-
 from enum import Enum
 
 
@@ -29,7 +28,7 @@ class Columns:
     IS_FRAUD = "is_fraud"
 
 
-# Feature names 
+# Feature names (to be created during feature engineering)
 class Features:
     """Feature names."""
     # Temporal
@@ -116,8 +115,8 @@ SECONDS_IN_DAY = 86400
 
 
 # Geographic constants
-EARTH_RADIUS_KM = 6371  
-MAX_REASONABLE_VELOCITY = 800  
+EARTH_RADIUS_KM = 6371  # Earth's radius in kilometers
+MAX_REASONABLE_VELOCITY = 800  # km/h (airplane speed)
 
 
 # Model constants
@@ -148,7 +147,7 @@ class Thresholds:
 
 # Data types for validation
 EXPECTED_DTYPES = {
-    Columns.TRANS_DATE_TIME: "object",
+    Columns.TRANS_DATE_TIME: "datetime64[ns]",  # Updated: datetime is better than object
     Columns.CC_NUM: "int64",
     Columns.MERCHANT: "object",
     Columns.CATEGORY: "object",
@@ -164,7 +163,7 @@ EXPECTED_DTYPES = {
     Columns.LONG: "float64",
     Columns.CITY_POP: "int64",
     Columns.JOB: "object",
-    Columns.DOB: "object",
+    Columns.DOB: "datetime64[ns]",  # Updated: datetime is better than object
     Columns.TRANS_NUM: "object",
     Columns.UNIX_TIME: "int64",
     Columns.MERCH_LAT: "float64",
