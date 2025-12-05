@@ -49,7 +49,7 @@ fraude_extremo = {
 es_fraude, prob, det = predictor.predict_fraud(fraude_extremo)
 print(f"Monto: ${fraude_extremo['amt']:.2f}")
 print(f"Distancia cliente-comerciante: ~4000 km (NY a LA)")
-print(f"Resultado: {'🚨 FRAUDE' if es_fraude else '✓ Legítimo'}")
+print(f"Resultado: {' FRAUDE' if es_fraude else '✓ Legítimo'}")
 print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 
 # 2. FRAUDE CLÁSICO - Monto muy alto en ciudad pequeña
@@ -72,7 +72,7 @@ fraude_clasico = {
 es_fraude, prob, det = predictor.predict_fraud(fraude_clasico)
 print(f"Monto: ${fraude_clasico['amt']:.2f}")
 print(f"Población ciudad: {fraude_clasico['city_pop']}")
-print(f"Resultado: {'🚨 FRAUDE' if es_fraude else '✓ Legítimo'}")
+print(f"Resultado: {' FRAUDE' if es_fraude else '✓ Legítimo'}")
 print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 
 # 3. SOSPECHOSO MODERADO - Monto medio-alto con distancia moderada
@@ -95,7 +95,7 @@ sospechoso_moderado = {
 es_fraude, prob, det = predictor.predict_fraud(sospechoso_moderado)
 print(f"Monto: ${sospechoso_moderado['amt']:.2f}")
 print(f"Población ciudad: {sospechoso_moderado['city_pop']}")
-print(f"Resultado: {'🚨 FRAUDE' if es_fraude else '✓ Legítimo'}")
+print(f"Resultado: {' FRAUDE' if es_fraude else '✓ Legítimo'}")
 print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 
 # 4. TRANSACCIÓN NORMAL - Monto bajo cerca de casa
@@ -118,7 +118,7 @@ normal_tipica = {
 es_fraude, prob, det = predictor.predict_fraud(normal_tipica)
 print(f"Monto: ${normal_tipica['amt']:.2f}")
 print(f"Población ciudad: {normal_tipica['city_pop']}")
-print(f"Resultado: {'🚨 FRAUDE' if es_fraude else '✓ Legítimo'}")
+print(f"Resultado: {' FRAUDE' if es_fraude else '✓ Legítimo'}")
 print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 
 # 5. TRANSACCIÓN LEGÍTIMA - Compra típica en ciudad grande
@@ -141,7 +141,7 @@ legitima = {
 es_fraude, prob, det = predictor.predict_fraud(legitima)
 print(f"Monto: ${legitima['amt']:.2f}")
 print(f"Población ciudad: {legitima['city_pop']}")
-print(f"Resultado: {'🚨 FRAUDE' if es_fraude else '✓ Legítimo'}")
+print(f"Resultado: {' FRAUDE' if es_fraude else '✓ Legítimo'}")
 print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 
 # 6. COMPRA PEQUEÑA LEJOS - Puede ser legítima (viaje)
@@ -164,7 +164,7 @@ viaje_pequeno = {
 es_fraude, prob, det = predictor.predict_fraud(viaje_pequeno)
 print(f"Monto: ${viaje_pequeno['amt']:.2f}")
 print(f"Distancia: ~280 km (viaje posible)")
-print(f"Resultado: {'🚨 FRAUDE' if es_fraude else '✓ Legítimo'}")
+print(f"Resultado: {' FRAUDE' if es_fraude else '✓ Legítimo'}")
 print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 
 # 7. MONTO EXTREMO - Muy alto en ubicación improbable
@@ -187,7 +187,7 @@ monto_extremo = {
 es_fraude, prob, det = predictor.predict_fraud(monto_extremo)
 print(f"Monto: ${monto_extremo['amt']:.2f}")
 print(f"Población: {monto_extremo['city_pop']} (pueblo pequeño)")
-print(f"Resultado: {'🚨 FRAUDE' if es_fraude else '✓ Legítimo'}")
+print(f"Resultado: {' FRAUDE' if es_fraude else '✓ Legítimo'}")
 print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 
 # 8. CIUDAD GRANDE COMPRA NORMAL - Muy seguro
@@ -210,7 +210,7 @@ muy_segura = {
 es_fraude, prob, det = predictor.predict_fraud(muy_segura)
 print(f"Monto: ${muy_segura['amt']:.2f}")
 print(f"Población ciudad: {muy_segura['city_pop']:,}")
-print(f"Resultado: {'🚨 FRAUDE' if es_fraude else '✓ Legítimo'}")
+print(f"Resultado: {' FRAUDE' if es_fraude else '✓ Legítimo'}")
 print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 
 # 9. COORDENADAS IDÉNTICAS - Compra online o en tienda
@@ -233,7 +233,7 @@ misma_ubicacion = {
 es_fraude, prob, det = predictor.predict_fraud(misma_ubicacion)
 print(f"Monto: ${misma_ubicacion['amt']:.2f}")
 print(f"Distancia: 0 km (mismo lugar)")
-print(f"Resultado: {'🚨 FRAUDE' if es_fraude else '✓ Legítimo'}")
+print(f"Resultado: {' FRAUDE' if es_fraude else '✓ Legítimo'}")
 print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 
 # 10. CASO LÍMITE - Monto medio en distancia media
@@ -257,7 +257,7 @@ es_fraude, prob, det = predictor.predict_fraud(caso_limite)
 print(f"Monto: ${caso_limite['amt']:.2f}")
 print(f"Población: {caso_limite['city_pop']:,}")
 print(f"Distancia: ~140 km")
-print(f"Resultado: {'🚨 FRAUDE' if es_fraude else '✓ Legítimo'}")
+print(f"Resultado: {' FRAUDE' if es_fraude else '✓ Legítimo'}")
 print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 
 print("\n" + "="*70)
