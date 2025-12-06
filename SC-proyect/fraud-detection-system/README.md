@@ -186,7 +186,8 @@ El pipeline de preprocesamiento limpia y valida los datos automáticamente.
 # Como los datos ya están en data/raw/
 python scripts/preprocess_pipeline.py --skip-download
 # eso de skip es porq lo tenia como una descarga que se podia actualizar, pero mejor me quede con lo de los datos descargados previamente para mejor manejo
-
+python -m src.models.predict --mode train --model_path models/fraud_model.pkl
+python -m src.models.predecir --mode train --model_path models/fraud_model.pkl
 ```
 
 **Opciones disponibles:**
@@ -269,18 +270,20 @@ frontend/
 ```
 
 **Integración con API:**
-```javascript
-// frontend/src/services/api.js
-const API_BASE_URL = 'http://localhost:8000';
+```bash
+# Ubicación de la API en src/api/app.py
 
-export const predictFraud = async (transactionData) => {
-  const response = await fetch(`${API_BASE_URL}/predict`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(transactionData)
-  });
-  return response.json();
-};
+# activar tu venv si no esta habilitado
+  # En Windows:
+  venv\Scripts\activate
+  
+  # En Mac/Linux:
+  source venv/bin/activate
+
+# ejecución desde la carpeta raiz (SC-proyect/fraud-detection-system)
+python -m src.api.app
+API_BASE_URL = 'http://127.0.0.1:5000';
+
 ```
 
 ---
@@ -366,6 +369,5 @@ El código del proyecto está disponible para uso académico.
 
 ---
 
-## Grupo
-
-Grupo #3
+## Grupo 3
+### Samsung Innovation Campus

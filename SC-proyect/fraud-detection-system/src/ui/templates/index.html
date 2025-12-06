@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Fraud Detection</title>
+</head>
+<body>
+    <h1>Fraud Detection - Sprint 3</h1>
+
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv">
+        <button type="submit">Subir y predecir</button>
+    </form>
+
+    <h2>Resultados</h2>
+    <pre id="result"></pre>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        const resultEl = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+
+            const res = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            resultEl.textContent = JSON.stringify(data, null, 2);
+        });
+    </script>
+</body>
+</html>
