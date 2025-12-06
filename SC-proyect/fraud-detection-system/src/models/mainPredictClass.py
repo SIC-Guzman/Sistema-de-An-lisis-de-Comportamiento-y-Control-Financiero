@@ -39,11 +39,10 @@ class FraudPredictor:
         if self.feature_columns is None:
             raise ValueError("El modelo no tiene información de columnas. Re-entrena el modelo.")
         
-        df = pd.DataFrame(0, index=[0], columns=self.feature_columns)
+        df = pd.DataFrame(0.0, index=[0], columns=self.feature_columns, dtype='float64')
         
         for key, value in features.items():
             if key in df.columns:
-                # Convertir booleanos a int
                 if isinstance(value, bool):
                     value = int(value)
                 df.at[0, key] = value
@@ -62,16 +61,13 @@ class FraudPredictor:
         Returns:
             Tupla con (es_fraude, probabilidad, detalles)
         """
-        # Crear DataFrame con las columnas correctas
+        
         df = self.create_transaction_dataframe(features)
         
-        # Obtener probabilidad
         probability = self.pipeline.predict_proba(df)[:, 1][0]
         
-        # Determinar si es fraude según el threshold
         is_fraud = probability >= self.optimal_threshold
         
-        # Crear detalles adicionales
         details = {
             'is_fraud': bool(is_fraud),
             'probability': float(probability),
@@ -100,7 +96,6 @@ class FraudPredictor:
         if self.feature_importance is not None:
             return self.feature_importance.head(n)
         else:
-            # Si no hay feature importance, calcularla del modelo
             print("Calculando feature importance del modelo...")
             model = self.pipeline.named_steps['model']
             importances = model.feature_importances_
@@ -141,7 +136,6 @@ FEATURES DE LA TRANSACCIÓN
 {'='*60}
 """
         
-        # Agrupar features por categoría
         categories = {
             'Temporales': ['hour', 'day_of_week', 'month', 'is_weekend', 'is_night', 
                           'time_since_last_trans', 'trans_velocity'],
@@ -162,102 +156,3 @@ FEATURES DE LA TRANSACCIÓN
         explanation += f"\n{'='*60}\n"
         
         return explanation
-
-
-def ejemplo_uso():
-    """Ejemplo de cómo usar el predictor"""
-    
-    # Inicializar predictor
-    predictor = FraudPredictor('models/fraud_model.pkl')
-    
-    print("\n" + "="*60)
-    print("EJEMPLO 1: Transacción Sospechosa")
-    print("="*60)
-    
-    # Transacción sospechosa (noche, lejos de casa, alta velocidad)
-    transaccion_sospechosa = {
-        'hour': 3,  # 3 AM
-        'is_night': True,
-        'is_weekend': True,
-        'distance_from_home': 500.0,  # 500 km de casa
-        'distance_from_last': 450.0,
-        'geographic_velocity': 200.0,  # 200 km/h (imposible normalmente)
-        'time_since_last_trans': 7200,  # 2 horas desde última
-        'merchant_risk_score': 0.8,  # Comerciante de alto riesgo
-        'has_suspicious_keyword': True,
-        'amt_mean_7d': 50.0,
-        'amt_std_7d': 15.0,
-        'location_entropy': 0.5  # Baja entropía = pocas ubicaciones
-    }
-    
-    print(predictor.explain_prediction(transaccion_sospechosa))
-    
-    print("\n" + "="*60)
-    print("EJEMPLO 2: Transacción Normal")
-    print("="*60)
-    
-    # Transacción normal
-    transaccion_normal = {
-        'hour': 14,  # 2 PM
-        'is_night': False,
-        'is_weekend': False,
-        'distance_from_home': 5.0,  # 5 km de casa
-        'distance_from_last': 3.0,
-        'geographic_velocity': 15.0,  # Velocidad normal
-        'time_since_last_trans': 86400,  # 1 día desde última
-        'merchant_risk_score': 0.2,  # Comerciante confiable
-        'has_suspicious_keyword': False,
-        'amt_mean_7d': 45.0,
-        'amt_std_7d': 12.0,
-        'location_entropy': 2.5  # Alta entropía = muchas ubicaciones
-    }
-    
-    print(predictor.explain_prediction(transaccion_normal))
-    
-    # Mostrar features más importantes
-    print("\n" + "="*60)
-    print("TOP 10 FEATURES MÁS IMPORTANTES DEL MODELO")
-    print("="*60)
-    print(predictor.get_top_features(10).to_string(index=False))
-
-
-def predecir_transaccion_custom():
-    """Función interactiva para predecir transacciones personalizadas"""
-    
-    predictor = FraudPredictor('models/fraud_model.pkl')
-    
-    print("\n" + "="*60)
-    print("PREDICTOR DE FRAUDE - TRANSACCIÓN PERSONALIZADA")
-    print("="*60)
-    print("\nIngresa los valores para la transacción:")
-    print("(Presiona Enter para usar valor por defecto)\n")
-    
-    features = {}
-    
-    # Temporales
-    features['hour'] = int(input("Hora del día (0-23) [12]: ") or 12)
-    features['is_night'] = input("¿Es de noche (2AM-6AM)? (s/n) [n]: ").lower() == 's'
-    features['is_weekend'] = input("¿Es fin de semana? (s/n) [n]: ").lower() == 's'
-    
-    # Geográficas
-    features['distance_from_home'] = float(input("Distancia desde casa (km) [10.0]: ") or 10.0)
-    features['geographic_velocity'] = float(input("Velocidad geográfica (km/h) [20.0]: ") or 20.0)
-    
-    # Comportamiento
-    features['amt_mean_7d'] = float(input("Monto promedio últimos 7 días [50.0]: ") or 50.0)
-    features['trans_freq_7d'] = int(input("Frecuencia de transacciones 7d [10]: ") or 10)
-    
-    # NLP
-    features['merchant_risk_score'] = float(input("Score de riesgo del comerciante (0-1) [0.3]: ") or 0.3)
-    features['has_suspicious_keyword'] = input("¿Tiene palabras sospechosas? (s/n) [n]: ").lower() == 's'
-    
-    print(predictor.explain_prediction(features))
-
-
-if __name__ == "__main__":
-    import sys
-    
-    if len(sys.argv) > 1 and sys.argv[1] == '--interactive':
-        predecir_transaccion_custom()
-    else:
-        ejemplo_uso()

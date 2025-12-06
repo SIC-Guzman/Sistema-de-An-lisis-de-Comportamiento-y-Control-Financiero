@@ -5,7 +5,8 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models.predict import FraudPredictor
+# Se aprovecha el archivo "predict_base" para usar su clase de predicciones ya creada
+from models.mainPredictClass import FraudPredictor
 
 # Cargar modelo una sola vez
 predictor = FraudPredictor('models/fraud_model.pkl')
@@ -28,6 +29,7 @@ print("="*70)
 # ============================================================================
 # ESCENARIOS DE PRUEBA CON FEATURES REALES
 # ============================================================================
+# Nota: el modelo aún requiere de entrenamiento para cumplir con las salidas propuestas en los ejemplos
 
 # 1. FRAUDE EXTREMO - Monto alto + Ubicación muy lejana
 print("\n" + "="*70)
@@ -263,7 +265,4 @@ print(f"Probabilidad: {prob:.2%} | Riesgo: {det['risk_level']}")
 print("\n" + "="*70)
 print("PRUEBAS COMPLETADAS")
 print("="*70)
-print("\n💡 NOTA: El modelo usa solo features básicas sin ingeniería de features.")
-print("   Para mejores resultados, considera re-entrenar con features engineered:"
-      "\n   - Distancia geográfica calculada, hora del día, día de la semana,")
-print("   - Patrones de comportamiento, velocidad de transacciones, etc.")
+print("\nNOTA: El modelo usa solo features básicas sin ingeniería de features.")
