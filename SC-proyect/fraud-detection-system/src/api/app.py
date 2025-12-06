@@ -1,12 +1,11 @@
-# src/api/app.py
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone 
 
 # IMPORTANTE:
 # Usamos import relativo porque api y models están dentro de src
-from src.models.predict import FraudPredictor
+from src.models.mainPredictClass import FraudPredictor
 
 # ====== RUTAS BASE ======
 # /src/api/app.py  -> parent = /src/api
@@ -22,17 +21,15 @@ TEMPLATES_DIR = BASE_DIR / "src" / "ui" / "templates"
 
 app = Flask(__name__, template_folder=str(TEMPLATES_DIR))
 
-# Cargamos el modelo UNA sola vez
-predictor = FraudPredictor(str(MODEL_PATH))
-
-
 @app.route("/")
 def index():
-    # Renderiza src/ui/templates/index.html
     return render_template("index.html")
 
 
-# Mapeo español -> columnas que espera el modelo
+# Cargamos el modelo UNA sola vez
+predictor = FraudPredictor(str(MODEL_PATH))
+
+# Mapeo de columnas del CSV en español -> columnas que espera el modelo
 COLUMN_MAPPING = {
     "id_transaccion": "Unnamed: 0",
     "monto": "amt",
@@ -58,78 +55,86 @@ def predict():
     except Exception as e:
         return jsonify({"error": f"Error al leer el CSV: {e}"}), 400
 
-    # Copia en español (como viene el CSV)
+    # Copia en español para devolver al front
     df_es = df.copy()
 
-    # Renombrar PARA EL MODELO (inglés)
+    # Renombrar para el modelo (internamente en inglés)
     df_model = df.rename(columns=COLUMN_MAPPING)
 
-    registros = []
+    predicciones = []
 
+    # Recorremos filas: modelo (inglés) vs respuesta (español)
     for (_, row_model), (_, row_es) in zip(df_model.iterrows(), df_es.iterrows()):
-        features = row_model.to_dict()
+        features_model = row_model.to_dict()
+        transaccion_es = row_es.to_dict()
 
         # Predicción del modelo
-        es_fraude, prob, details = predictor.predict_fraud(features)
+        is_fraud, prob, details = predictor.predict_fraud(features_model)
 
-        # Sacar fecha desde unix_time
-        unix_ts = row_model.get("unix_time", None)
+         # --- FORMATEO CORRECTO DE FECHA ---
+        unix_ts = transaccion_es.get("tiempo_unix")
+
         fecha = None
         if pd.notna(unix_ts):
             try:
-                fecha = datetime.fromtimestamp(int(unix_ts), tz=timezone.utc).strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
-            except Exception:
+                fecha = datetime.fromtimestamp(
+                    int(unix_ts), tz=timezone.utc
+                ).strftime("%Y-%m-%d %H:%M:%S")
+            except:
                 fecha = None
 
-        # Aquí SOLO guardamos lo que quieres + campos internos para lógica
-        registros.append({
-            "id_transaccion": row_es.get("id_transaccion"),
-            "codigo_postal": row_es.get("codigo_postal"),
-            "monto": row_es.get("monto"),
-            "tarjeta_credito": row_es.get("tarjeta_credito"),
+
+        # Enriquecemos la transacción en español con los campos de predicción
+        resultado = {
+            **transaccion_es,
+            "es_fraude": bool(details["is_fraud"]),
+            "probabilidad_fraude": round(float(details["probability"]), 2),
             "nivel_riesgo": details["risk_level"],
-            "fecha": fecha,
-
-            # internos (no los enviaremos al front)
-            "_es_fraude": bool(details["is_fraud"]),
-            "_probabilidad_fraude": float(details["probability"]),
-        })
-
-    # Filas sospechosas: SOLO con los campos visibles
-    transacciones_sospechosas = [
-        {
-            "id_transaccion": r["id_transaccion"],
-            "codigo_postal": r["codigo_postal"],
-            "monto": r["monto"],
-            "tarjeta_credito": r["tarjeta_credito"],
-            "nivel_riesgo": r["nivel_riesgo"],
-            "fecha": r["fecha"],
+            "umbral_decision": round(float(details["threshold"]), 2),
+            "confianza_modelo": round(float(details["confidence"]), 2),
+            "fecha": fecha
         }
-        for r in registros
-        if r["_es_fraude"]
+
+        predicciones.append(resultado)
+
+    # Filas sospechosas completas (con todos los campos)
+    sospechosas_completas = [
+        row for row in predicciones
+        if row["es_fraude"]
     ]
 
-    # Puntaje global de fraude (máxima probabilidad)
+    # Versión simplificada solo con los campos que quieres mostrar
+    transacciones_sospechosas = [
+        {
+            "id_transaccion": row.get("id_transaccion"),
+            "codigo_postal": row.get("codigo_postal"),
+            "monto": row.get("monto"),
+            "tarjeta_credito": row.get("tarjeta_credito"),
+            "nivel_riesgo": row.get("nivel_riesgo"),
+        }
+        for row in sospechosas_completas
+    ]
+
+    # Puntaje global de fraude = probabilidad máxima de fraude
     puntaje_fraude = max(
-        (r["_probabilidad_fraude"] for r in registros),
+        (row["probabilidad_fraude"] for row in predicciones),
         default=0.0
     )
 
     response = {
-        "hay_alerta": len(transacciones_sospechosas) > 0,
         "puntaje_fraude": puntaje_fraude,
-        "total_transacciones": len(registros),
+        "hay_alerta": len(transacciones_sospechosas) > 0,
+        "total_transacciones": len(predicciones),
         "total_sospechosas": len(transacciones_sospechosas),
         "transacciones_sospechosas": transacciones_sospechosas,
+        # Si el profe quiere ver todo, acá sigue estando todo el detalle:
+        "predicciones": predicciones
     }
 
     return jsonify(response)
 
+
 if __name__ == "__main__":
     # Ejecutar SIEMPRE desde la raíz del proyecto:
     #   python -m src.api.app
-    app.run(debug=True)
-
-
+    app.run(debug=True) 
