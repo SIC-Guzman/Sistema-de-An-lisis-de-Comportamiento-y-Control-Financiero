@@ -246,6 +246,34 @@ pytest tests/test_data/test_loader.py
 
 
 ---
+## Organización y explicación de scripts para el modelo
+### Organización
+Dentro de la subcarpeta *models* de la carpeta src se encuentran 3 archivos:
+
+```
+src/
+├── api/
+├── data/
+├── features/
+├── models/
+│   ├── predecir.py/
+│   ├── mainPredictClass.py/
+│   ├── randomForest.py/
+├── ui/
+├── utils/
+```
+La funcionalidad de cada uno de los archivos indicados anteriormente se encuentra a contuación:
+- **randomFores.py:** Archivo con la estructura del modelo, cuenta con las configuraciones del modelo y genera el archivo *fraud_model.pkl* (El modelo ya entrenado) para su uso en los archivos de predicción.
+- **mainPredictClass.py:** Cuenta con la clase principal que se encarga de predecir resultados tomando parametros de entrada. Adicionalmente, cuenta con algunos ejemplos de predicción
+- **predecir.py:** Cuenta con ejemplos variados de predicción haciendo uso de la clase *FraudPredictor* del archivo *predict_base.py*
+
+La ejecución y aprovechamiento del código es simple:
+1. Ejecutar el archivo *randomForest.py* para generar el archivo .pkl del modelo.
+2. Ejecutar el archivo *predecir.py* que aprovecha la clase de mainPredictClass para hacer predicciones de acuerdo a parametros de entrada para observar el resultado de los ejemplos.
+
+*Nota: Siempre ejecutar todo dentro del directorio principal: "\fraud-detection-system"*
+
+---
 
 ## Desarrollo de Frontend 
 
