@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if page_title %}{{ page_title }} - {% endif %}Control Financiero</title>
+    
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+        :root {
+            --bs-primary: #003687 !important;
+            --bs-primary-rgb: 0, 54, 135 !important;
+            --bs-success: #198754 !important;
+            --bs-warning: #ffc107 !important;
+            --bs-danger: #dc3545 !important;
+            --bs-info: #84e8fb !important;
+        }
+        
+        .bg-primary {
+            background-color: var(--bs-primary) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--bs-primary) !important;
+            border-color: var(--bs-primary) !important;
+        }
+        
+        .btn-primary:hover {
+            background-color: #00255a !important;
+            border-color: #00255a !important;
+        }
+        
+        .text-primary {
+            color: var(--bs-primary) !important;
+        }
+        
+        .border-primary {
+            border-color: var(--bs-primary) !important;
+        }
+        
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+            'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+}
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        h1.mb-3-center {
+            text-align: center;
+            margin-bottom: 1.5rem !important;
+        }
+        
+        .footer {
+            margin-top: 3rem;
+        }
+        
+        
+        .text-center-center {
+            text-align: center !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="bi bi-shield-check"></i> Control Financiero
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" 
+                            href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'simulation' %}active{% endif %}" 
+                            href="{{ url_for('manual_predict') }}">
+                            <i class="bi bi-cash-coin"></i> Predicción Manual
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="navbar-text">
+                    <i class="bi bi-person-circle"></i> Usuario
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-3-center">
+                    {% if page_title %}{{ page_title }}{% else %}Dashboard{% endif %}
+                </h1>
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-5 py-3 bg-light border-top">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">
+                        <i class="bi bi-shield-check text-primary"></i>
+                        <strong>Sistema de Detección de Fraude</strong>
+                    </p>
+                    <small class="text-muted">Grupo #3</small>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted">
+                        Tecnologías: Bootstrap 5, Python, Flask, Scikit-Learn
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    
+    {% block scripts %}{% endblock %}
+    
+</body>
+</html>
