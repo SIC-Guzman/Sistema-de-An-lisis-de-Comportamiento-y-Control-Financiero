@@ -13,8 +13,8 @@ from src.models.mainPredictClass import FraudPredictor
 # parent.parent.parent -> raíz del proyecto
 BASE_DIR = Path(__file__).resolve().parents[2]
 
-# Modelo entrenado en: fraud-detection-system/models/fraud_model.pkl
-MODEL_PATH = BASE_DIR / "models" / "fraud_model.pkl"
+# Modelo entrenado en: fraud-detection-system/models/xgboost_fraud_model.pkl
+MODEL_PATH = BASE_DIR / "models" / "xgboost_fraud_model.pkl"
 
 # Carpeta de templates: fraud-detection-system/src/ui/templates
 TEMPLATES_DIR = BASE_DIR / "src" / "ui" / "templates"

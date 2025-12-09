@@ -8,35 +8,39 @@ import numpy as np
 import pandas as pd
 from typing import Dict, Optional
 from pathlib import Path
-from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import average_precision_score, roc_auc_score, confusion_matrix
+from sklearn.metrics import average_precision_score, roc_auc_score, confusion_matrix, fbeta_score
 from sklearn.preprocessing import RobustScaler
 from sklearn.pipeline import Pipeline
 
 warnings.filterwarnings('ignore', category=UserWarning)
 
-class RandomForestFraudModel:
+class XGBoostFraudModel:
     
     def __init__(self, config_path: Optional[str] = None):
         self.config = self._load_config(config_path)
         self.pipeline = None
         self.metrics = {}
-        self.optimal_threshold = 0.6
+        self.optimal_threshold = 0.5
         self.feature_columns = None
         self._initialize_pipeline()
     
     def _load_config(self, config_path: Optional[str]) -> Dict:
         default_config = {
-            "n_estimators": 400,
-            "max_depth": 15,
-            "min_samples_split": 20,
-            "min_samples_leaf": 10,
-            "max_features": "sqrt",
-            "class_weight": {0: 1, 1: 5},
+            "n_estimators": 850,
+            "max_depth": 10,
+            "learning_rate": 0.03,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 3,
+            "gamma": 0.1,
+            "scale_pos_weight": 18,
+            "reg_alpha": 0.1,
+            "reg_lambda": 1.0,
             "random_state": 42,
             "n_jobs": -1,
-            "min_precision": 0.55,
+            "tree_method": "hist",
             "target_fbeta": 2.0
         }
         
@@ -47,15 +51,21 @@ class RandomForestFraudModel:
         return default_config
     
     def _initialize_pipeline(self) -> None:
-        model = RandomForestClassifier(
+        model = XGBClassifier(
             n_estimators=self.config["n_estimators"],
             max_depth=self.config["max_depth"],
-            min_samples_split=self.config["min_samples_split"],
-            min_samples_leaf=self.config["min_samples_leaf"],
-            max_features=self.config["max_features"],
-            class_weight=self.config["class_weight"],
+            learning_rate=self.config["learning_rate"],
+            subsample=self.config["subsample"],
+            colsample_bytree=self.config["colsample_bytree"],
+            min_child_weight=self.config["min_child_weight"],
+            gamma=self.config["gamma"],
+            scale_pos_weight=self.config["scale_pos_weight"],
+            reg_alpha=self.config["reg_alpha"],
+            reg_lambda=self.config["reg_lambda"],
             random_state=self.config["random_state"],
-            n_jobs=self.config["n_jobs"]
+            n_jobs=self.config["n_jobs"],
+            tree_method=self.config["tree_method"],
+            eval_metric='aucpr'
         )
         
         self.pipeline = Pipeline([
@@ -101,16 +111,24 @@ class RandomForestFraudModel:
         }
     
     def _optimize_threshold(self, y_true: pd.Series, y_pred_proba: np.ndarray) -> None:
-        from sklearn.metrics import precision_recall_curve
+        thresholds = np.arange(0.1, 0.9, 0.01)
+        best_f2 = 0
+        best_thresh = 0.5
         
-        precision, recall, thresholds = precision_recall_curve(y_true, y_pred_proba)
+        for thresh in thresholds:
+            y_pred = (y_pred_proba >= thresh).astype(int)
+            f2 = fbeta_score(y_true, y_pred, beta=2)
+            
+            if f2 > best_f2:
+                best_f2 = f2
+                best_thresh = thresh
         
-        target_precision = self.config.get("min_precision", 0.60)
-        for i, thresh in enumerate(thresholds):
-            if precision[i] >= target_precision:
-                self.optimal_threshold = thresh
-                print(f"Threshold: {thresh:.4f} (P={precision[i]:.4f}, R={recall[i]:.4f})")
-                break
+        self.optimal_threshold = best_thresh
+        y_pred_final = (y_pred_proba >= best_thresh).astype(int)
+        tn, fp, fn, tp = confusion_matrix(y_true, y_pred_final).ravel()
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+        print(f"Threshold: {best_thresh:.4f} (P={precision:.4f}, R={recall:.4f}, F2={best_f2:.4f})")
     
     def predict(self, X: pd.DataFrame) -> np.ndarray:
         X_clean = X.select_dtypes(include=[np.number])
@@ -179,7 +197,7 @@ def import_dataloader():
             print(f"Error al importar DataLoader: {e}")
             return None
 
-def train_fraud_model(config_path=None, save_path='models/fraud_model.pkl'):
+def train_fraud_model(config_path=None, save_path='models/xgboost_fraud_model.pkl'):
     DataLoader = import_dataloader()
     if not DataLoader:
         return None
@@ -201,7 +219,7 @@ def train_fraud_model(config_path=None, save_path='models/fraud_model.pkl'):
     X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
     X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.3, stratify=y_temp, random_state=42)
     
-    model = RandomForestFraudModel(config_path)
+    model = XGBoostFraudModel(config_path)
     model.train(X_train, y_train, X_val, y_val)
     
     test_proba = model.predict_proba(X_test)
@@ -216,7 +234,7 @@ def train_fraud_model(config_path=None, save_path='models/fraud_model.pkl'):
     return model
 
 def predict_with_model(model_path, data_path, output_dir='predictions'):
-    model = RandomForestFraudModel()
+    model = XGBoostFraudModel()
     model.load_model(model_path)
     
     DataLoader = import_dataloader()
@@ -247,7 +265,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', default='train', choices=['train', 'predict'])
     parser.add_argument('--config', default=None)
-    parser.add_argument('--model_path', default='models/fraud_model.pkl')
+    parser.add_argument('--model_path', default='models/xgboost_fraud_model.pkl')
     parser.add_argument('--data_path', default=None)
     parser.add_argument('--output_dir', default='predictions')
     
