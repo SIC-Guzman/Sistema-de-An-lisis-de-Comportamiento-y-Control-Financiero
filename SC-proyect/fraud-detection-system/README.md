@@ -36,12 +36,6 @@ Este proyecto implementa un sistema completo de detección de fraude que analiza
 
 ---
 
-<<<<<<< HEAD
-
----
-
-=======
->>>>>>> dd170ce7e558578755f22f8796e3e43c2da0aead
 ## Dataset
 
 **Fuente**: Sparkov Credit Card Fraud Detection Dataset (Kaggle)
@@ -169,7 +163,6 @@ fraud-detection-system/
    python -c "import pandas; import sklearn; print('Instalación exitosa')"
    ```
 
-<<<<<<< HEAD
 ### Flujo de ejecucion
 
 1. **Datos csv**
@@ -320,18 +313,11 @@ La ejecución y aprovechamiento del código es simple:
 
 ## Desarrollo de Frontend 
 
-<<<<<<< HEAD
 ### Flask Frontend
-=======
-Si el front lo hacen en React. Como idea abstracta para el que le toque: 
-
-### React Frontend
->>>>>>> dd170ce7e558578755f22f8796e3e43c2da0aead
 
 ```
 frontend/
 ├── src/
-<<<<<<< HEAD
 │   ├── api/
 │   │   ├── __init__.py
 │   │   └── app.py
@@ -364,18 +350,6 @@ frontend/
 │   │   ├── constants.py
 │   │   └── logger.py    
 └── __init__.py
-=======
-│   ├── components/
-│   │   ├── Dashboard.jsx
-│   │   ├── TransactionMap.jsx
-│   │   ├── AlertPanel.jsx
-│   │   └── Timeline.jsx
-│   ├── services/
-│   │   └── api.js          # Llamadas a la API
-│   └── App.jsx
-├── package.json
-└── README.md
->>>>>>> dd170ce7e558578755f22f8796e3e43c2da0aead
 ```
 
 **Integración con API:**
@@ -443,11 +417,7 @@ model:
 
 ### Referencia de Datos
 
-<<<<<<< HEAD
 Idea de como tratar los datos. `docs/data_dictionary.md` para descripción detallada de:
-=======
-Para los que tengan que utilizar los datos les dejo una idea de como tratarlos.`docs/data_dictionary.md` para descripción detallada de:
->>>>>>> dd170ce7e558578755f22f8796e3e43c2da0aead
 - Todos los campos del dataset
 - Tipos de datos y rangos válidos
 - Ejemplos de uso
@@ -476,7 +446,6 @@ El código del proyecto está disponible para uso académico.
 ## Equipo
 
 - **Sprint 1 (Datos y Preprocesamiento)**: [Eric David Rojas de León]
-<<<<<<< HEAD
 - **Sprint 2 (Features y Modelos)**: [Camilo Ernesto Sincal Sipac]
 - **Sprint 3 (API y UI)**: [Karen Michelle Gatica Arriola ] y [Génesis Paola Gómez Fernández]
 - **Sprint 4 (Testing y Deploy)**: [Alberto Moisés Gerardo Lémus Alvarado]
@@ -484,13 +453,4 @@ El código del proyecto está disponible para uso académico.
 ---
 
 ## Grupo 2
-=======
-- **Sprint 2 (Features y Modelos)**: [Nombre]
-- **Sprint 3 (API y UI)**: [Nombre]
-- **Sprint 4 (Testing y Deploy)**: [Nombre]
-
----
-
-## Grupo 3
->>>>>>> dd170ce7e558578755f22f8796e3e43c2da0aead
 ### Samsung Innovation Campus
