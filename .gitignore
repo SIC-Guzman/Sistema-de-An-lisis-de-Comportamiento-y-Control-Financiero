@@ -1,0 +1,40 @@
+# Ignorar archivos en data/ pero mantener estructura
+data/raw/*.csv
+data/raw/*.parquet
+data/processed/*.csv
+data/processed/*.parquet
+data/interim/*
+data/external/*
+
+# Mantener .gitkeep
+!**/.gitkeep
+
+# Logs
+logs/*.log
+
+# Modelos
+models/*.pkl
+models/*.joblib
+models/*.h5
+
+# Python
+__pycache__/
+*.pyc
+venv/
+env/
+.pytest_cache/
+
+# Archivos grandes
+*.zip
+*.csv
+*.parquet
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Checkpoints de notebooks
+.ipynb_checkpoints/

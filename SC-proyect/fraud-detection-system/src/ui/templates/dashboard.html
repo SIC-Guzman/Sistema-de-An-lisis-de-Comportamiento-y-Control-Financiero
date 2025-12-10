@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+{% block subtitle %}
+<p class="text-muted mb-0">Sistema de análisis de transacciones financieras para detección de fraude</p>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="card-title mb-3">
+                            Bienvenido al Sistema de Detección de Fraude
+                        </h3>
+                        <p class="card-text">
+                            Este sistema utiliza <strong>Machine Learning con Random Forest</strong> para 
+                            identificar transacciones fraudulentas en tiempo real. Analiza patrones 
+                            temporales, geográficos y de comportamiento para detectar actividades sospechosas.
+                        </p>
+                        <div class="mt-4">
+                            <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg me-3">
+                                <i class="bi bi-search me-2"></i> Predecir Fraude
+                            </a>
+                            
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estado del Sistema -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-cpu"></i> Estado del Sistema</h5>
+            </div>
+            <div class="card-body">
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Servicio Flask</span>
+                        <span class="badge bg-success">Activo</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>API Predict</span>
+                        <span class="badge bg-success">Lista</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Características Analizadas -->
+    <div class="col-md-8">
+        <div class="card h-100" id="features">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Características Analizadas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-clock text-primary"></i> Análisis temporal</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success"></i> Detección de patrones inusuales de horario y frecuencia</li>
+                        </ul>
+                        
+                        <h6 class="mt-3"><i class="bi bi-geo-alt text-primary"></i> Análisis geográfico</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success"></i> Identificación de cambios bruscos de ubicación y viajes imposibles</li>
+                            
+                        </ul>
+                        <h6><i class="bi bi-person-circle text-primary"></i> Análisis de comportamiento</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success"></i> Evaluación de patrones de gasto y hábitos del usuario</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        
+                        <h6><i class="bi bi-search text-primary"></i> Procesamiento de texto</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success"></i> Clasificación de comerciantes y detección de términos sospechosos</li>
+                        </ul>
+                        
+                        <h6 class="mt-3"><i class="bi bi-bar-chart text-primary"></i> Métricas</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success"></i> 10 características</li>
+                            <li><i class="bi bi-check text-success"></i> Random Forest</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
