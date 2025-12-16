@@ -117,6 +117,12 @@
                             <i class="bi bi-cash-coin"></i> Predicción Manual
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'about' %}active{% endif %}" 
+                            href="{{ url_for('about_page') }}">
+                            <i class="bi bi-info-circle"></i> Sobre nosotros
+                        </a>
+                    </li>
                 </ul>
                 
                 <div class="navbar-text">

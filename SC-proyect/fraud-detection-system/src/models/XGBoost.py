@@ -74,7 +74,7 @@ class XGBoostFraudModel:
         ])
     
     def train(self, X_train: pd.DataFrame, y_train: pd.Series,
-              X_val: pd.DataFrame, y_val: pd.Series) -> Dict:
+            X_val: pd.DataFrame, y_val: pd.Series) -> Dict:
         
         print(f"\nEntrenando con {len(X_train)} muestras ({y_train.mean()*100:.2f}% fraude)")
         

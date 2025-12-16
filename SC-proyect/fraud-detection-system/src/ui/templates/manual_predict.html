@@ -107,6 +107,7 @@
                         <div class="card-body">
                             <div id="resultContent"></div>
                         </div>
+                        
                     </div>
                 </div>
             </div>
@@ -116,6 +117,8 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 <script>
 // Verificar estado de la API al cargar
 checkAPIStatus();
@@ -227,8 +230,9 @@ function validateData(data) {
     
     return true;
 }
-
+let currentPredictionResult = null;
 function showResult(result) {
+    currentPredictionResult = result;
     const container = document.getElementById('resultContainer');
     const content = document.getElementById('resultContent');
     
@@ -330,16 +334,21 @@ function showResult(result) {
                     <div class="card-body">
                         ${getRecommendations(isFraud, probability)}
                         <div class="d-grid gap-2 mt-3">
-                            <button class="btn btn-outline-primary" onclick="resetForm()">
-                                <i class="bi bi-arrow-repeat me-2"></i> Analizar otra transacción
-                            </button>
-                            ${isFraud ? `
-                            <button class="btn btn-outline-danger" onclick="reportFraud()">
-                                <i class="bi bi-flag me-2"></i> Reportar fraude
-                            </button>
-                            ` : ''}
-                        </div>
-                    </div>
+                        <button class="btn btn-outline-primary" onclick="resetForm()">
+                            <i class="bi bi-arrow-repeat me-2"></i> Analizar otra transacción
+                        </button>
+
+                        <button class="btn btn-outline-success" onclick="downloadPDF()">
+                            <i class="bi bi-file-earmark-pdf me-2"></i> Descargar reporte PDF
+                        </button>
+
+                        ${isFraud ? `
+                        <button class="btn btn-outline-danger" onclick="reportFraud()">
+                            <i class="bi bi-flag me-2"></i> Reportar fraude
+                        </button>
+                        ` : ''}
+                </div>
+
                 </div>
             </div>
         </div>
@@ -347,6 +356,8 @@ function showResult(result) {
     
     container.style.display = 'block';
     container.scrollIntoView({ behavior: 'smooth' });
+
+    
 }
 
 function getRecommendations(isFraud, probability) {
@@ -394,6 +405,59 @@ function showError(message) {
 function resetForm() {
     document.getElementById('predictionForm').reset();
     document.getElementById('resultContainer').style.display = 'none';
+}
+
+function downloadPDF() {
+    if (!currentPredictionResult) {
+        alert('No hay resultados para generar el PDF.');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text('Reporte de Predicción de Fraude', 14, 20);
+
+    doc.setFontSize(11);
+    doc.text(`ID Transacción: ${currentPredictionResult.transaction_id || 'N/A'}`, 14, 35);
+    doc.text(`Monto: $${parseFloat(currentPredictionResult.amount || 0).toFixed(2)}`, 14, 42);
+    doc.text(`Resultado: ${currentPredictionResult.is_fraud ? 'FRAUDE' : 'NORMAL'}`, 14, 49);
+    doc.text(`Probabilidad de Fraude: ${(currentPredictionResult.probability * 100).toFixed(2)}%`, 14, 56);
+    doc.text(`Nivel de Riesgo: ${currentPredictionResult.risk_level}`, 14, 63);
+    doc.text(`Confianza del Modelo: ${(currentPredictionResult.confidence * 100).toFixed(1)}%`, 14, 70);
+
+    doc.text('Recomendaciones:', 14, 85);
+
+    let recomendaciones = [];
+    if (currentPredictionResult.is_fraud) {
+        recomendaciones = [
+            'Bloquear la tarjeta inmediatamente',
+            'Notificar al titular de la cuenta',
+            'Reportar a la entidad bancaria',
+            'Guardar evidencia'
+        ];
+    } else if (currentPredictionResult.probability > 0.7) {
+        recomendaciones = [
+            'Verificar identidad del cliente',
+            'Solicitar autenticación adicional',
+            'Monitorear transacciones similares'
+        ];
+    } else {
+        recomendaciones = [
+            'Transacción aprobada',
+            'Monitoreo rutinario'
+        ];
+    }
+
+    doc.autoTable({
+        startY: 90,
+        head: [['Recomendaciones']],
+        body: recomendaciones.map(r => [r]),
+        theme: 'grid'
+    });
+
+    doc.save(`reporte_fraude_${currentPredictionResult.transaction_id || 'transaccion'}.pdf`);
 }
 
 

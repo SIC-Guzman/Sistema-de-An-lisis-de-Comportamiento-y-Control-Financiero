@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block subtitle %}
+<p class="text-muted mb-0">Sobre nosotros</p>
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title mb-3">
+                    Acerca del Sistema de Detección de Fraude
+                </h3>
+                <p class="card-text">
+                    Este sistema ha sido desarrollado por un equipo dedicado de estudiantes en Ingeniería en Ciencias y Sistemas
+                    con el objetivo de combatir el fraude financiero utilizando técnicas avanzadas de Machine Learning.
+                </p>
+                <p class="card-text">
+                    Utilizamos un modelo de Random Forest entrenado con un conjunto de datos extenso que incluye
+                    características temporales, geográficas y de comportamiento para identificar patrones sospechosos en las transacciones financieras.
+                </p>
+                <p class="card-text">
+                    Nuestro compromiso es proporcionar una herramienta eficaz y confiable para ayudar a las instituciones financieras
+                    a protegerse contra actividades fraudulentas y salvaguardar los activos de sus clientes.
+                </p>
+            </div>
+        </div>
+    </div>
+    </div>
+        <div class="row g-4 mt-2"> 
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Características Analizadas en el entrenamiento XGBoost</h5>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Identificación de transacción</li>
+                    <li class="list-group-item">Monto de la transacción</li>
+                    <li class="list-group-item">Número de tarjeta de crédito</li>
+                    <li class="list-group-item">Población de la ciudad donde se realizó</li>
+                    <li class="list-group-item">Latitud del cliente quién la realizó</li>
+                    <li class="list-group-item">Longitud del cliente quién la realizó</li>
+                    <li class="list-group-item">Tiempo unix</li>
+                    <li class="list-group-item">Código postal</li>
+                </ul>
+            </div>   
+        </div>       
+{% endblock %}

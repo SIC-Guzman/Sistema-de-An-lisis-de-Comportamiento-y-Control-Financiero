@@ -168,7 +168,14 @@ def create_app():
                 'details': str(e),
                 'traceback': error_details[:500]
             }), 500
-
+        
+    @app.route('/about')
+    def about_page():
+        return render_template('about.html',
+                            page_title='Sobre nosotros',
+                            active_page='about',
+                            api_url=app.config['API_BASE_URL'])
+    
     @app.route('/api/predict_manual', methods=['POST'])
     def predict_manual_api():
         try:
@@ -332,6 +339,9 @@ def create_app():
                             page_title='Acerca del Proyecto',
                             active_page='about')
     
+    def make_report_pdf():
+        """Generar reporte PDF (función placeholder)."""
+        pass  # Implementar generación de PDF si es necesario
     
     def check_api_status():
         """Verificar estado de la API."""
