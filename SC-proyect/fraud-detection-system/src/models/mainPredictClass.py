@@ -5,6 +5,11 @@ from typing import Dict, Tuple
 from datetime import datetime
 from math import radians, sin, cos, sqrt, atan2
 
+# Nuevos importes para el Bloque Clasificacion de Fraudes
+from .fraud_type_classifier import FraudTypeClassifier
+from .fraud_types import FraudType
+
+
 class FraudPredictor:
     """Predictor de fraude para transacciones individuales"""
     
@@ -16,6 +21,10 @@ class FraudPredictor:
         self.pipeline = data['pipeline']
         self.optimal_threshold = data['optimal_threshold']
         self.feature_columns = data.get('feature_columns', None)
+
+        #Adicion del Bloque Clasificacion de Fraudes
+        self.fraud_type_classifier = FraudTypeClassifier()
+
         
         self.feature_importance = data.get('feature_importance', None)
         
@@ -190,6 +199,12 @@ class FraudPredictor:
         # Determinar is_fraud basado en rangos de probabilidad
         is_fraud = self._classify_fraud(probability)
         
+
+
+
+        # reemplazamos para el Bloque Clasificacion de Fraudes
+        # Eliminamos
+        """
         details = {
             'is_fraud': bool(is_fraud),
             'probability': float(probability),
@@ -198,6 +213,33 @@ class FraudPredictor:
             'risk_level': self._get_risk_level(probability),
             'engineered_features': engineered_features
         }
+        """
+        # =========================
+        # Agregamos: CLASIFICACIÓN DEL TIPO DE FRAUDE 
+        # =========================
+        fraud_type, fraud_reasons = self.fraud_type_classifier.classify(
+            is_fraud=is_fraud,
+            raw_features=raw_features,
+            engineered_features=engineered_features
+        )
+
+        details = {
+            'is_fraud': bool(is_fraud),
+            'probability': float(probability),
+            'threshold': float(self.optimal_threshold),
+            'confidence': float(abs(probability - 0.5) * 2),
+            'risk_level': self._get_risk_level(probability),
+
+            # Sprint 2
+            'fraud_type': fraud_type.value if isinstance(fraud_type, FraudType) else str(fraud_type),
+            'fraud_reasons': fraud_reasons,
+
+            # Se mantiene para explicación / debugging
+            'engineered_features': engineered_features
+        }
+
+
+
         
         return is_fraud, probability, details
     

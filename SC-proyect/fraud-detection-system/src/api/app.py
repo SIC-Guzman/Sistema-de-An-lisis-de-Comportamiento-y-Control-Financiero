@@ -40,6 +40,7 @@ def predict():
     try:
         # 1. Cargar dataset limpio desde pipeline
         df = pipeline.load_and_prepare(dataset="test")
+        df = df.head(500)
 
         predictions = []
 
@@ -63,10 +64,16 @@ def predict():
                 "probabilidad_fraude": round(float(details["probability"]), 4),
                 "nivel_riesgo": details["risk_level"],
                 "confianza_modelo": round(float(details["confidence"]), 4),
+
+                # 🔹 Sprint 2 (CLASIFICACIÓN)
+                "tipo_fraude": details.get("fraud_type"),
+                "razones_fraude": details.get("fraud_reasons", []),
+
                 "fecha": fecha,
                 "monto": raw_features.get(Columns.AMT),
                 "tarjeta_credito": raw_features.get(Columns.CC_NUM),
             })
+
 
         # Transacciones sospechosas
         sospechosas = [p for p in predictions if p["es_fraude"]]
