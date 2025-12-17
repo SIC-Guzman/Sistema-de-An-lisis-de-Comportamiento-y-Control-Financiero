@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Leaflet CSS para mapas interactivos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    
+    <style>
+        :root {
+            --bs-primary: #003687 !important;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .navbar {
+            background-color: var(--bs-primary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .main-content {
+            padding: 30px 0;
+        }
+        
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background-color: #e5e3df;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #003687 0%, #00255a 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #003687;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .legend {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-shield-check me-2"></i>
+                Control Financiero - Visualización Geográfica
+            </span>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="container-fluid main-content">
+        <div class="mb-4">
+            <h2 class="fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>{{ page_title }}</h2>
+            <p class="text-muted mb-0">Análisis geográfico de la transacción #{{ transaction_id }}</p>
+        </div>
+
+        <div class="row">
+            <!-- Información de la transacción -->
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Detalles de Transacción</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="transaction-info">
+                            <p class="text-center text-muted">
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                Cargando información...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Métricas de distancia -->
+                <div class="card border-0 shadow mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-rulers me-2"></i>Análisis de Distancia</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-card">
+                            <div class="metric-value" id="distance-value">--</div>
+                            <div class="metric-label">Kilómetros de distancia</div>
+                        </div>
+
+                        <div class="info-box">
+                            <strong><i class="bi bi-exclamation-triangle text-warning me-2"></i>Evaluación de riesgo según distancia:</strong>
+                            <p class="mb-0 mt-2" id="risk-assessment">Calculando...</p>
+                        </div>
+
+                        <div class="info-box">
+                            <strong><i class="bi bi-clock text-info me-2"></i>Tiempo estimado de viaje:</strong>
+                            <p class="mb-0 mt-2" id="travel-time">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leyenda -->
+                <div class="legend mt-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-map me-2"></i>Leyenda</h6>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #28a745;"></div>
+                        <span>Ubicación del Cliente</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #dc3545;"></div>
+                        <span>Ubicación del Comercio</span>
+                    </div>
+                    <div class="legend-item">
+                        <div style="width: 20px; height: 3px; background-color: #007bff; margin-right: 10px;"></div>
+                        <span>Ruta directa</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mapa -->
+            <div class="col-lg-8 mb-4">
+                <div class="card border-0 shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Visualización Geográfica</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="map"></div>
+                        
+                        <div class="alert alert-info mt-3" role="alert">
+                            <i class="bi bi-lightbulb me-2"></i>
+                            <strong>Tip:</strong> Haz zoom y mueve el mapa para explorar. La línea azul muestra la distancia directa entre cliente y comercio.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Análisis adicional -->
+                <div class="card border-0 shadow mt-4">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>Análisis de Anomalías</h5>
+                    </div>
+                    <div class="card-body" id="anomaly-analysis">
+                        <div class="text-center text-muted">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Analizando patrones...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón para volver -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <button onclick="window.close()" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>Cerrar Pestaña
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+    <script>
+        let map;
+        let clientMarker, merchantMarker;
+        let routeLine;
+        const transactionId = "{{ transaction_id }}";
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Iniciando visualización geográfica');
+            console.log('Transaction ID:', transactionId);
+            
+            // Inicializar mapa
+            initializeMap();
+            
+            // Cargar datos de la transacción
+            loadTransactionData();
+        });
+
+        function initializeMap() {
+            console.log('Inicializando mapa...');
+            
+            // Crear mapa centrado en Centro América por defecto
+            map = L.map('map').setView([14.6349, -90.5069], 10);
+
+            // Agregar capa de mapa
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 19
+            }).addTo(map);
+            
+            console.log('Mapa inicializado');
+        }
+
+        function loadTransactionData() {
+            console.log('Buscando datos en sessionStorage...');
+            
+            // Intentar obtener datos de sessionStorage
+            const storageKey = `transaction_${transactionId}`;
+            const transactionData = sessionStorage.getItem(storageKey);
+            
+            console.log('Storage key:', storageKey);
+            console.log('Datos encontrados:', transactionData ? 'Sí' : 'No');
+            
+            if (transactionData) {
+                try {
+                    const data = JSON.parse(transactionData);
+                    console.log('Datos parseados correctamente:', data);
+                    displayTransactionOnMap(data);
+                } catch (error) {
+                    console.error('Error al parsear datos:', error);
+                    showError('Error al cargar los datos de la transacción');
+                }
+            } else {
+                console.warn('No se encontraron datos en sessionStorage');
+                
+                // Intentar crear datos de prueba para debugging
+                console.log('Creando datos de prueba...');
+                const testData = {
+                    id_transaccion: transactionId,
+                    monto: 150.00,
+                    tarjeta_credito: '**** **** **** 1234',
+                    codigo_postal: '01010',
+                    latitud_cliente: 14.6349,
+                    longitud_cliente: -90.5069,
+                    latitud_comercio: 14.6500,
+                    longitud_comercio: -90.5200,
+                    es_fraude: true,
+                    nivel_riesgo: 'alto',
+                    probabilidad_fraude: 0.85
+                };
+                
+                console.log('Datos de prueba:', testData);
+                displayTransactionOnMap(testData);
+            }
+        }
+
+        function displayTransactionOnMap(transaction) {
+            console.log('Mostrando transacción en el mapa:', transaction);
+            
+            // Validar que existan las coordenadas
+            if (!transaction.latitud_cliente || !transaction.longitud_cliente || 
+                !transaction.latitud_comercio || !transaction.longitud_comercio) {
+                console.error('Coordenadas faltantes en la transacción');
+                showError('La transacción no tiene coordenadas válidas');
+                return;
+            }
+
+            const clientLat = parseFloat(transaction.latitud_cliente);
+            const clientLng = parseFloat(transaction.longitud_cliente);
+            const merchantLat = parseFloat(transaction.latitud_comercio);
+            const merchantLng = parseFloat(transaction.longitud_comercio);
+
+            console.log('Cliente:', clientLat, clientLng);
+            console.log('Comercio:', merchantLat, merchantLng);
+
+            // Limpiar marcadores previos
+            if (clientMarker) map.removeLayer(clientMarker);
+            if (merchantMarker) map.removeLayer(merchantMarker);
+            if (routeLine) map.removeLayer(routeLine);
+
+            // Crear iconos personalizados
+            const clientIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div style="background-color: #28a745; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            const merchantIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div style="background-color: #dc3545; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            // Agregar marcador del cliente
+            clientMarker = L.marker([clientLat, clientLng], { icon: clientIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="p-2">
+                        <strong>Ubicación del Cliente</strong><br>
+                        <small>Lat: ${clientLat.toFixed(4)}</small><br>
+                        <small>Lng: ${clientLng.toFixed(4)}</small><br>
+                        <small>Código Postal: ${transaction.codigo_postal || 'N/A'}</small>
+                    </div>
+                `);
+
+            // Agregar marcador del comercio
+            merchantMarker = L.marker([merchantLat, merchantLng], { icon: merchantIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="p-2">
+                        <strong>Ubicación del Comercio</strong><br>
+                        <small>Lat: ${merchantLat.toFixed(4)}</small><br>
+                        <small>Lng: ${merchantLng.toFixed(4)}</small>
+                    </div>
+                `);
+
+            // Dibujar línea entre puntos
+            routeLine = L.polyline([
+                [clientLat, clientLng],
+                [merchantLat, merchantLng]
+            ], {
+                color: '#007bff',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: '10, 5'
+            }).addTo(map);
+
+            // Ajustar vista para mostrar ambos puntos
+            const bounds = L.latLngBounds([
+                [clientLat, clientLng],
+                [merchantLat, merchantLng]
+            ]);
+            map.fitBounds(bounds, { padding: [50, 50] });
+
+            // Calcular distancia
+            const distance = calculateDistance(clientLat, clientLng, merchantLat, merchantLng);
+            
+            console.log('Distancia calculada:', distance, 'km');
+            
+            // Mostrar información
+            displayTransactionInfo(transaction, distance);
+            displayDistanceMetrics(distance);
+            displayAnomalyAnalysis(transaction, distance);
+            
+            console.log('Visualización completada');
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            // Fórmula de Haversine para calcular distancia entre dos puntos
+            const R = 6371; // Radio de la Tierra en km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function displayTransactionInfo(transaction, distance) {
+            const isFraud = transaction.es_fraude;
+            const riskLevel = transaction.nivel_riesgo || 'medio';
+            
+            document.getElementById('transaction-info').innerHTML = `
+                <div class="mb-3">
+                    <strong>ID Transacción:</strong><br>
+                    <span class="text-muted">${transaction.id_transaccion || 'N/A'}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Monto:</strong><br>
+                    <span class="text-success fs-4">$${(transaction.monto || 0).toFixed(2)}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Tarjeta:</strong><br>
+                    <code>${transaction.tarjeta_credito || 'N/A'}</code>
+                </div>
+                <div class="mb-3">
+                    <strong>Estado:</strong><br>
+                    <span class="badge bg-${isFraud ? 'danger' : 'success'} fs-6">
+                        ${isFraud ? 'FRAUDE DETECTADO' : 'TRANSACCIÓN SEGURA'}
+                    </span>
+                </div>
+                <div class="mb-3">
+                    <strong>Nivel de Riesgo:</strong><br>
+                    <span class="badge bg-${getRiskColor(riskLevel)} fs-6">${riskLevel.toUpperCase()}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Probabilidad de Fraude:</strong><br>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-${isFraud ? 'danger' : 'success'}" 
+                             style="width: ${(transaction.probabilidad_fraude * 100).toFixed(0)}%">
+                            ${(transaction.probabilidad_fraude * 100).toFixed(1)}%
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayDistanceMetrics(distance) {
+            document.getElementById('distance-value').textContent = distance.toFixed(2);
+            
+            // Calcular tiempo de viaje estimado (asumiendo 50 km/h promedio)
+            const travelTimeHours = distance / 50;
+            const travelTimeMinutes = Math.round(travelTimeHours * 60);
+            
+            document.getElementById('travel-time').innerHTML = `
+                Aproximadamente <strong>${travelTimeMinutes} minutos</strong> en vehículo
+            `;
+
+            // Evaluación de riesgo basada en distancia
+            let riskHtml = '';
+            if (distance < 5) {
+                riskHtml = `
+                    <span class="badge bg-success me-2">BAJO RIESGO</span>
+                    La distancia es corta (${distance.toFixed(2)} km). 
+                    Es común que las transacciones ocurran cerca de la ubicación del cliente.
+                `;
+            } else if (distance < 50) {
+                riskHtml = `
+                    <span class="badge bg-warning me-2">RIESGO MODERADO</span>
+                    Distancia moderada (${distance.toFixed(2)} km). 
+                    Podría ser una compra legítima en otra área de la ciudad o región cercana.
+                `;
+            } else if (distance < 200) {
+                riskHtml = `
+                    <span class="badge bg-warning me-2">RIESGO MEDIO-ALTO</span>
+                    Distancia considerable (${distance.toFixed(2)} km). 
+                    Requiere verificación adicional. Podría ser viaje o uso no autorizado.
+                `;
+            } else {
+                riskHtml = `
+                    <span class="badge bg-danger me-2">ALTO RIESGO</span>
+                    Distancia muy grande (${distance.toFixed(2)} km). 
+                    <strong>Altamente sospechoso.</strong> Es poco común que una transacción legítima 
+                    ocurra tan lejos de la ubicación del tarjetahabiente.
+                `;
+            }
+            
+            document.getElementById('risk-assessment').innerHTML = riskHtml;
+        }
+
+        function displayAnomalyAnalysis(transaction, distance) {
+            const anomalies = [];
+            
+            // Análisis de distancia
+            if (distance > 200) {
+                anomalies.push({
+                    icon: 'exclamation-triangle-fill',
+                    color: 'danger',
+                    title: 'Distancia Extrema',
+                    desc: `La transacción ocurrió a ${distance.toFixed(2)} km del cliente. Esto es altamente inusual.`
+                });
+            } else if (distance > 50) {
+                anomalies.push({
+                    icon: 'exclamation-triangle',
+                    color: 'warning',
+                    title: 'Distancia Significativa',
+                    desc: `La transacción ocurrió a ${distance.toFixed(2)} km del cliente. Podría requerir verificación.`
+                });
+            }
+
+            // Análisis de monto
+            if (transaction.monto > 1000) {
+                anomalies.push({
+                    icon: 'cash-stack',
+                    color: 'warning',
+                    title: 'Monto Alto',
+                    desc: `El monto de $${transaction.monto.toFixed(2)} es considerable y requiere atención.`
+                });
+            }
+
+            // Generar HTML
+            let anomalyHtml = '';
+            if (anomalies.length === 0) {
+                anomalyHtml = `
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Sin anomalías geográficas detectadas</strong>
+                        <p class="mb-0 mt-2">La ubicación de esta transacción parece normal y consistente con el comportamiento esperado.</p>
+                    </div>
+                `;
+            } else {
+                anomalyHtml = '<div class="list-group">';
+                anomalies.forEach(anomaly => {
+                    anomalyHtml += `
+                        <div class="list-group-item border-${anomaly.color} border-start border-3">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    <i class="bi bi-${anomaly.icon} text-${anomaly.color} me-2"></i>
+                                    ${anomaly.title}
+                                </h6>
+                            </div>
+                            <p class="mb-0">${anomaly.desc}</p>
+                        </div>
+                    `;
+                });
+                anomalyHtml += '</div>';
+            }
+
+            // Agregar recomendaciones
+            if (transaction.es_fraude) {
+                anomalyHtml += `
+                    <div class="alert alert-danger mt-3">
+                        <i class="bi bi-shield-exclamation me-2"></i>
+                        <strong>Recomendación:</strong> Esta transacción ha sido marcada como fraudulenta. 
+                        Se recomienda contactar al cliente y bloquear temporalmente la tarjeta.
+                    </div>
+                `;
+            }
+
+            document.getElementById('anomaly-analysis').innerHTML = anomalyHtml;
+        }
+
+        function getRiskColor(riskLevel) {
+            const risk = riskLevel ? riskLevel.toLowerCase() : 'medio';
+            if (risk.includes('alto') || risk.includes('high')) return 'danger';
+            if (risk.includes('medio') || risk.includes('medium')) return 'warning';
+            if (risk.includes('bajo') || risk.includes('low')) return 'success';
+            return 'secondary';
+        }
+
+        function showError(message) {
+            document.getElementById('transaction-info').innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    ${message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

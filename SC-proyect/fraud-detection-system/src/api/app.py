@@ -131,11 +131,14 @@ def predict():
             "monto": row.get("monto"),
             "tarjeta_credito": row.get("tarjeta_credito"),
             "nivel_riesgo": row.get("nivel_riesgo"),
-
             # Sprint 3
             "tipo_fraude": explanation["tipo_fraude"],
             "explicacion": explanation["explicacion"],
             "razones": explanation["razones"],
+            "latitud_cliente":row.get("latitud_cliente"),
+            "longitud_cliente":row.get("longitud_cliente"),
+            "latitud_comercio":row.get("latitud_comercio"),
+            "longitud_comercio":row.get("longitud_comercio")
         })
 
 

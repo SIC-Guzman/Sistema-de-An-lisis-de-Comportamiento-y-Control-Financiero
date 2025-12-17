@@ -1,3 +1,4 @@
+#app.py
 from flask import Flask, render_template, jsonify, request, redirect, url_for, flash
 import sys
 import os
@@ -365,6 +366,15 @@ def create_app():
                 'message': str(e)
             }
     
+    @app.route('/geo_visualization/<transaction_id>')
+    def geo_visualization(transaction_id):
+        """Visualización geográfica de una transacción específica."""
+        return render_template('geo_visualization.html',
+                            page_title='Visualización Geográfica',
+                            active_page='predict',
+                            transaction_id=transaction_id,
+                            api_url=app.config['API_BASE_URL'])
+
     @app.errorhandler(404)
     def page_not_found(e):
         return render_template('dashboard.html',
