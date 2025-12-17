@@ -87,10 +87,9 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label">Timestamp Unix</label>
-                                <input type="number" class="form-control" id="unix_time" name="unix_time" 
-                                        placeholder="1705267200" required>
-                                <small class="text-muted">Segundos desde 1 Ene 1970</small>
+                                <label class="form-label">Fecha y hora de la transacción</label>
+                                <input type="datetime-local" class="form-control" id="fecha_hora" name="fecha_hora" required>
+                                <small class="text-muted">Ej: 17/02/2025 14:30</small>
                             </div>
                         </div>
                     </div>
@@ -218,11 +217,7 @@ function validateData(data) {
     if (!data['zip'] || data['zip'].toString().length < 4) {
         errors.push('Código postal inválido');
     }
-    
-    if (!data['unix_time'] || data['unix_time'] < 1000000000) {
-        errors.push('Timestamp Unix inválido (debe ser después de 2001)');
-    }
-    
+       
     if (errors.length > 0) {
         showError('Errores de validación:<br>' + errors.join('<br>'));
         return false;
