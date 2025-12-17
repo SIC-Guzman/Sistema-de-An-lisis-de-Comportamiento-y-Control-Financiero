@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template
+from src.utils.explanations import generate_explanation
 import pandas as pd
 from pathlib import Path
 from datetime import datetime, timezone 
@@ -92,6 +93,7 @@ def predict():
             "nivel_riesgo": details["risk_level"],
             "umbral_decision": round(float(details["threshold"]), 2),
             "confianza_modelo": round(float(details["confidence"]), 2),
+            "engineered_features": details.get("engineered_features", {}),
             "fecha": fecha
         }
 
@@ -104,16 +106,38 @@ def predict():
     ]
 
     # Versión simplificada solo con los campos que quieres mostrar
-    transacciones_sospechosas = [
-        {
+    """
+        transacciones_sospechosas = [
+            {
+                "id_transaccion": row.get("id_transaccion"),
+                "codigo_postal": row.get("codigo_postal"),
+                "monto": row.get("monto"),
+                "tarjeta_credito": row.get("tarjeta_credito"),
+                "nivel_riesgo": row.get("nivel_riesgo"),
+            }
+            for row in sospechosas_completas
+        ]
+    """
+    transacciones_sospechosas = []
+        
+    for row in sospechosas_completas:
+        explanation = generate_explanation(
+            row.get("engineered_features", {})
+        )
+
+        transacciones_sospechosas.append({
             "id_transaccion": row.get("id_transaccion"),
             "codigo_postal": row.get("codigo_postal"),
             "monto": row.get("monto"),
             "tarjeta_credito": row.get("tarjeta_credito"),
             "nivel_riesgo": row.get("nivel_riesgo"),
-        }
-        for row in sospechosas_completas
-    ]
+
+            # Sprint 3
+            "tipo_fraude": explanation["tipo_fraude"],
+            "explicacion": explanation["explicacion"],
+            "razones": explanation["razones"],
+        })
+
 
     # Puntaje global de fraude = probabilidad máxima de fraude
     puntaje_fraude = max(
