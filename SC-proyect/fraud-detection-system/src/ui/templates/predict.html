@@ -255,6 +255,12 @@
                             </span>
                         </td>
                         <td>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-dark ver-mapa-btn mb-1"
+                                    data-transaction-index="${index}">
+                                <i class="bi bi-map me-1"></i>
+                                Ver análisis geográfico
+                            </button>
                             <button class="btn btn-sm btn-outline-primary ver-explicacion">
                                 Ver explicación
                             </button>
@@ -290,6 +296,59 @@
                     suspiciousBody.appendChild(row);
                     suspiciousBody.appendChild(detailRow);
                 });
+
+                // Botón para abrir mapa en nueva pestaña
+                    row.querySelector('.ver-mapa-btn').addEventListener('click', function() {
+                        const transIndex = parseInt(this.dataset.transactionIndex);
+                        const transactionData = data.transacciones_sospechosas[transIndex];
+                        
+                        console.log('Abriendo mapa para transacción:', transactionData);
+                        
+                        // Validar que tengamos todos los datos necesarios
+                        if (!transactionData) {
+                            alert('Error: No se encontraron datos de la transacción');
+                            return;
+                        }
+                        
+                        // Asegurar que todos los campos necesarios existan
+                        const dataToStore = {
+                            id_transaccion: transactionData.id_transaccion || transIndex,
+                            monto: transactionData.monto || 0,
+                            tarjeta_credito: transactionData.tarjeta_credito || 'N/A',
+                            codigo_postal: transactionData.codigo_postal || 'N/A',
+                            latitud_cliente: transactionData.latitud_cliente || 0,
+                            longitud_cliente: transactionData.longitud_cliente || 0,
+                            latitud_comercio: transactionData.latitud_comercio || 0,
+                            longitud_comercio: transactionData.longitud_comercio || 0,
+                            es_fraude: transactionData.es_fraude !== undefined ? transactionData.es_fraude : true,
+                            nivel_riesgo: transactionData.nivel_riesgo || 'alto',
+                            probabilidad_fraude: transactionData.probabilidad_fraude || 0
+                        };
+                        
+                        console.log('Guardando en sessionStorage:', dataToStore);
+                        
+                        // Guardar datos en sessionStorage
+                        const transactionId = dataToStore.id_transaccion;
+                        const storageKey = `transaction_${transactionId}`;
+                        
+                        try {
+                            sessionStorage.setItem(storageKey, JSON.stringify(dataToStore));
+                            console.log('Datos guardados correctamente en:', storageKey);
+                            
+                            // Verificar que se guardó correctamente
+                            const verificacion = sessionStorage.getItem(storageKey);
+                            console.log('Verificación de guardado:', verificacion ? 'OK' : 'ERROR');
+                            
+                            // Abrir nueva pestaña
+                            const url = `/geo_visualization/${transactionId}`;
+                            console.log('Abriendo URL:', url);
+                            window.open(url, '_blank');
+                            
+                        } catch (error) {
+                            console.error('Error al guardar en sessionStorage:', error);
+                            alert('Error al preparar la visualización geográfica');
+                        }
+                    });
 
 
             } else {
