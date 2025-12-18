@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Fraud Detection</title>
 </head>
+
 <body>
     <h1>Fraud Detection - Sprint 3</h1>
 
@@ -15,7 +17,7 @@
     <h2>Resultados</h2>
     <pre id="result"></pre>
 
-    <script>
+    <!-- <script>
         const form = document.getElementById('upload-form');
         const resultEl = document.getElementById('result');
 
@@ -31,6 +33,57 @@
             const data = await res.json();
             resultEl.textContent = JSON.stringify(data, null, 2);
         });
+    </script> -->
+    <script>
+        const form = document.getElementById('upload-form');
+        const resultEl = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            resultEl.textContent = "Procesando archivo...";
+
+            const formData = new FormData(form);
+
+            const res = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            mostrarResultados(data);
+        });
+
+        function mostrarResultados(data) {
+            if (!data.hay_alerta) {
+                resultEl.textContent = "No se detectaron transacciones fraudulentas.";
+                return;
+            }
+
+            let output = "";
+            output += `Puntaje global de fraude: ${data.puntaje_fraude}\n`;
+            output += `Total de transacciones: ${data.total_transacciones}\n`;
+            output += `Total sospechosas: ${data.total_sospechosas}\n\n`;
+
+            data.transacciones_sospechosas.forEach((tx, index) => {
+                output += `Transacción ${index + 1}\n`;
+                output += `ID: ${tx.id_transaccion}\n`;
+                output += `Monto: ${tx.monto}\n`;
+                output += `Nivel de riesgo: ${tx.nivel_riesgo}\n`;
+                output += `Tipo de fraude: ${tx.tipo_fraude}\n`;
+                output += `Explicación: ${tx.explicacion}\n`;
+                output += `Razones:\n`;
+
+                tx.razones.forEach(r => {
+                    output += ` - ${r}\n`;
+                });
+
+                output += `\n----------------------------\n\n`;
+            });
+
+            resultEl.textContent = output;
+        }
     </script>
+
 </body>
+
 </html>
