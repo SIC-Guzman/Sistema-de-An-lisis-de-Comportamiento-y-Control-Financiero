@@ -170,16 +170,21 @@ def predict():
                 "tarjeta_credito": row.get("tarjeta_credito"),
                 "nivel_riesgo": row.get("nivel_riesgo"),
 
-                # Sprint 3 (explicabilidad)
-                "tipo_fraude": exp.get("tipo_fraude"),
-                "explicacion": exp.get("explicacion"),
-                "razones": exp.get("razones"),
-
-                "latitud_cliente":row.get("latitud_cliente"),
-                "longitud_cliente":row.get("longitud_cliente"),
-                "latitud_comercio":row.get("latitud_comercio"),
-                "longitud_comercio":row.get("longitud_comercio")
-            })
+        transacciones_sospechosas.append({
+            "id_transaccion": row.get("id_transaccion"),
+            "codigo_postal": row.get("codigo_postal"),
+            "monto": row.get("monto"),
+            "tarjeta_credito": row.get("tarjeta_credito"),
+            "nivel_riesgo": row.get("nivel_riesgo"),
+            # Sprint 3
+            "tipo_fraude": explanation["tipo_fraude"],
+            "explicacion": explanation["explicacion"],
+            "razones": explanation["razones"],
+            "latitud_cliente":row.get("latitud_cliente"),
+            "longitud_cliente":row.get("longitud_cliente"),
+            "latitud_comercio":row.get("latitud_comercio"),
+            "longitud_comercio":row.get("longitud_comercio")
+        })
 
         # =====================
         # 4) RESPONSE
