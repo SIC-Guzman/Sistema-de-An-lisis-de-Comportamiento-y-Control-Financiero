@@ -68,12 +68,10 @@ def _build_prediction_row(idx: int, raw_features: dict, details: dict) -> dict:
     unix_ts = raw_features.get(getattr(Columns, "UNIX_TIME", "unix_time")) or raw_features.get("unix_time")
     fecha = _format_fecha(unix_ts)
 
-    # ID transacción: preferimos Unnamed: 0 si existe
     id_trans = raw_features.get("Unnamed: 0")
     if id_trans is None or (isinstance(id_trans, float) and pd.isna(id_trans)):
         id_trans = raw_features.get("id_transaccion", idx)
 
-    # Campos básicos de salida (en español)
     row_out = {
         "id_transaccion": id_trans,
         "es_fraude": bool(details.get("is_fraud", False)),
@@ -89,9 +87,14 @@ def _build_prediction_row(idx: int, raw_features: dict, details: dict) -> dict:
         "monto": raw_features.get(getattr(Columns, "AMT", "amt")) or raw_features.get("amt"),
         "tarjeta_credito": raw_features.get(getattr(Columns, "CC_NUM", "cc_num")) or raw_features.get("cc_num"),
         "codigo_postal": raw_features.get("zip") or raw_features.get("codigo_postal"),
+
+        # ✅ COORDENADAS (para el mapa)
+        "latitud_cliente": raw_features.get("lat"),
+        "longitud_cliente": raw_features.get("long"),
+        "latitud_comercio": raw_features.get("merch_lat"),
+        "longitud_comercio": raw_features.get("merch_long"),
     }
 
-    # Si tu predictor manda engineered_features, lo incluimos (sirve para explanations)
     if "engineered_features" in details:
         row_out["engineered_features"] = details["engineered_features"]
 
