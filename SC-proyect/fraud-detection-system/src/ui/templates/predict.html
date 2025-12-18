@@ -6,384 +6,415 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-10">
-        <div class="card border-0 shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-upload me-2"></i>Predicción Masiva</h4>
-            </div>
+  <div class="col-lg-10">
+    <div class="card border-0 shadow">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="bi bi-upload me-2"></i>Predicción Masiva</h4>
+      </div>
 
-            <div class="card-body">
-                <!-- Estado de la API -->
-                <div class="alert alert-info" role="alert">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <strong>API Backend:</strong> {{ api_url }}
-                    <span id="api-status" class="badge bg-success ms-2">Conectado</span>
-                </div>
-
-                <!-- Formulario de subida -->
-                <form id="upload-form" enctype="multipart/form-data">
-                    <div class="mb-4">
-                        <label for="csv-file" class="form-label fw-bold">
-                            <i class="bi bi-file-earmark-spreadsheet me-2"></i>
-                            Seleccionar archivo CSV
-                        </label>
-                        <input type="file" class="form-control form-control-lg" id="csv-file" name="file" accept=".csv"
-                            required>
-                        <div class="form-text">
-                            <strong>Requisitos del archivo:</strong> Debe incluir las columnas:
-                            id_transaccion, monto, tarjeta_credito, poblacion_ciudad,
-                            latitud_cliente, longitud_cliente, latitud_comercio,
-                            longitud_comercio, tiempo_unix, codigo_postal
-                        </div>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg" id="predict-btn">
-                            <i class="bi bi-search me-2"></i>
-                            <span id="btn-text">Analizar Transacciones</span>
-                            <span id="loading-spinner" class="spinner-border spinner-border-sm ms-2 d-none"
-                                role="status"></span>
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Resultados -->
-                <div id="results-section" class="mt-5 d-none">
-                    <h5 class="mb-3"><i class="bi bi-clipboard-data me-2"></i>Resultados del Análisis</h5>
-
-                    <!-- Resumen General -->
-                    <div class="row mb-4" id="summary-section">
-                        <div class="col-md-3">
-                            <div class="card border-success">
-                                <div class="card-body text-center">
-                                    <h2 id="total-transactions" class="text-dark">0</h2>
-                                    <p class="mb-0 text-muted">Total Transacciones</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-success">
-                                <div class="card-body text-center">
-                                    <h2 id="safe-count" class="text-success">0</h2>
-                                    <p class="mb-0 text-muted">Transacciones Seguras</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-warning">
-                                <div class="card-body text-center">
-                                    <h2 id="suspicious-count" class="text-warning">0</h2>
-                                    <p class="mb-0 text-muted">Sospechosas</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-danger">
-                                <div class="card-body text-center">
-                                    <h2 id="fraudulent-count" class="text-danger">0</h2>
-                                    <p class="mb-0 text-muted">Fraudulentas</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Alerta de Fraude -->
-                    <div id="fraud-alert" class="alert alert-danger d-none" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        <strong>¡ALERTA DE FRAUDE!</strong> Se han detectado transacciones fraudulentas en el archivo.
-                    </div>
-
-                    <!-- Tabla de transacciones sospechosas -->
-                    <div class="card mb-4" id="suspicious-transactions-card">
-                        <div class="card-header bg-warning text-dark">
-                            <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Transacciones Sospechosas
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover" id="suspicious-table">
-                                    <thead>
-                                        <tr>
-                                            <th>ID Transacción</th>
-                                            <th>Monto</th>
-                                            <th>Tarjeta</th>
-                                            <th>Código Postal</th>
-                                            <th>Nivel de Riesgo</th>
-                                            <th>Acción</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="suspicious-body">
-                                        <!-- Las transacciones sospechosas se cargarán aquí -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Detalles completos -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Detalles Completos de Transacciones</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover" id="results-table">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Monto</th>
-                                            <th>Tarjeta</th>
-                                            <th>Fecha</th>
-                                            <th>Prob. Fraude</th>
-                                            <th>Nivel Riesgo</th>
-                                            <th>Estado</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="results-body">
-                                        <!-- Todas las transacciones se cargarán aquí -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mensaje de error -->
-                <div id="error-alert" class="alert alert-danger mt-3 d-none" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <span id="error-message"></span>
-                </div>
-            </div>
+      <div class="card-body">
+        <!-- Estado de la API -->
+        <div class="alert alert-info" role="alert">
+          <i class="bi bi-info-circle me-2"></i>
+          <strong>API Backend:</strong> {{ api_url }}
+          <span id="api-status" class="badge bg-success ms-2">Conectado</span>
         </div>
+
+        <!-- Formulario de subida -->
+        <form id="upload-form" enctype="multipart/form-data">
+          <div class="mb-4">
+            <label for="csv-file" class="form-label fw-bold">
+              <i class="bi bi-file-earmark-spreadsheet me-2"></i>
+              Seleccionar archivo CSV
+            </label>
+            <input type="file"
+                   class="form-control form-control-lg"
+                   id="csv-file"
+                   name="file"
+                   accept=".csv"
+                   required>
+            <div class="form-text">
+              <strong>Requisitos del archivo:</strong> Debe incluir las columnas:
+              id_transaccion, monto, tarjeta_credito, poblacion_ciudad,
+              latitud_cliente, longitud_cliente, latitud_comercio,
+              longitud_comercio, tiempo_unix, codigo_postal
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg" id="predict-btn">
+              <i class="bi bi-search me-2"></i>
+              <span id="btn-text">Analizar Transacciones</span>
+              <span id="loading-spinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Resultados -->
+        <div id="results-section" class="mt-5 d-none">
+          <h5 class="mb-3"><i class="bi bi-clipboard-data me-2"></i>Resultados del Análisis</h5>
+
+          <!-- Resumen General -->
+          <div class="row mb-4" id="summary-section">
+            <div class="col-md-3">
+              <div class="card border-success">
+                <div class="card-body text-center">
+                  <h2 id="total-transactions" class="text-dark">0</h2>
+                  <p class="mb-0 text-muted">Total Transacciones</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card border-success">
+                <div class="card-body text-center">
+                  <h2 id="safe-count" class="text-success">0</h2>
+                  <p class="mb-0 text-muted">Transacciones Seguras</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card border-warning">
+                <div class="card-body text-center">
+                  <h2 id="suspicious-count" class="text-warning">0</h2>
+                  <p class="mb-0 text-muted">Sospechosas</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card border-danger">
+                <div class="card-body text-center">
+                  <h2 id="fraudulent-count" class="text-danger">0</h2>
+                  <p class="mb-0 text-muted">Fraudulentas</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alerta de Fraude -->
+          <div id="fraud-alert" class="alert alert-danger d-none" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>¡ALERTA DE FRAUDE!</strong> Se han detectado transacciones fraudulentas en el archivo.
+          </div>
+
+          <!-- Tabla de transacciones sospechosas -->
+          <div class="card mb-4" id="suspicious-transactions-card">
+            <div class="card-header bg-warning text-dark">
+              <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Transacciones Sospechosas
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover" id="suspicious-table">
+                  <thead>
+                    <tr>
+                      <th>ID Transacción</th>
+                      <th>Monto</th>
+                      <th>Tarjeta</th>
+                      <th>Código Postal</th>
+                      <th>Nivel de Riesgo</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="suspicious-body">
+                    <!-- Las transacciones sospechosas se cargarán aquí -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detalles completos -->
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Detalles Completos de Transacciones</h5>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover" id="results-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Monto</th>
+                      <th>Tarjeta</th>
+                      <th>Fecha</th>
+                      <th>Prob. Fraude</th>
+                      <th>Nivel Riesgo</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="results-body">
+                    <!-- Todas las transacciones se cargarán aquí -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div id="error-alert" class="alert alert-danger mt-3 d-none" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <span id="error-message"></span>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('upload-form');
-        const predictBtn = document.getElementById('predict-btn');
-        const btnText = document.getElementById('btn-text');
-        const spinner = document.getElementById('loading-spinner');
-        const resultsSection = document.getElementById('results-section');
-        const errorAlert = document.getElementById('error-alert');
-        const errorMessage = document.getElementById('error-message');
-        const fraudAlert = document.getElementById('fraud-alert');
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('upload-form');
+  const predictBtn = document.getElementById('predict-btn');
+  const btnText = document.getElementById('btn-text');
+  const spinner = document.getElementById('loading-spinner');
+  const resultsSection = document.getElementById('results-section');
+  const errorAlert = document.getElementById('error-alert');
+  const errorMessage = document.getElementById('error-message');
+  const fraudAlert = document.getElementById('fraud-alert');
 
-        // Verificar estado de la API al cargar
-        checkAPIStatus();
+  checkAPIStatus();
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-            const fileInput = document.getElementById('csv-file');
-            if (!fileInput.files[0]) {
-                showError('Por favor selecciona un archivo CSV');
-                return;
-            }
+    const fileInput = document.getElementById('csv-file');
+    if (!fileInput.files[0]) {
+      showError('Por favor selecciona un archivo CSV');
+      return;
+    }
 
-            // Mostrar estado de carga
-            predictBtn.disabled = true;
-            btnText.textContent = 'Analizando...';
-            spinner.classList.remove('d-none');
-            errorAlert.classList.add('d-none');
-            resultsSection.classList.add('d-none');
-            fraudAlert.classList.add('d-none');
+    predictBtn.disabled = true;
+    btnText.textContent = 'Analizando...';
+    spinner.classList.remove('d-none');
+    errorAlert.classList.add('d-none');
+    resultsSection.classList.add('d-none');
+    fraudAlert.classList.add('d-none');
 
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
 
-            try {
-                const response = await fetch('/predict', {
-                    method: 'POST',
-                    body: formData
-                });
+    try {
+      const response = await fetch('/predict', {
+        method: 'POST',
+        body: formData
+      });
 
-                const data = await response.json();
+      const data = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(data.message || `Error HTTP: ${response.status}`);
-                }
+      if (!response.ok) {
+        throw new Error(data.message || `Error HTTP: ${response.status}`);
+      }
 
-                // Mostrar resultados
-                displayResults(data);
-                resultsSection.classList.remove('d-none');
+      displayResults(data);
+      resultsSection.classList.remove('d-none');
 
-            } catch (error) {
-                showError(`Error al procesar el archivo: ${error.message}`);
-            } finally {
-                // Restaurar botón
-                predictBtn.disabled = false;
-                btnText.textContent = 'Analizar Transacciones';
-                spinner.classList.add('d-none');
-            }
+    } catch (error) {
+      showError(`Error al procesar el archivo: ${error.message}`);
+    } finally {
+      predictBtn.disabled = false;
+      btnText.textContent = 'Analizar Transacciones';
+      spinner.classList.add('d-none');
+    }
+  });
+
+  function displayResults(data) {
+    document.getElementById('total-transactions').textContent = data.total_transacciones || 0;
+    document.getElementById('fraudulent-count').textContent = data.total_sospechosas || 0;
+
+    const safeCount = (data.total_transacciones || 0) - (data.total_sospechosas || 0);
+    document.getElementById('safe-count').textContent = safeCount > 0 ? safeCount : 0;
+    document.getElementById('suspicious-count').textContent = data.total_sospechosas || 0;
+
+    if (data.hay_alerta) {
+      fraudAlert.classList.remove('d-none');
+    }
+
+    // -------- sospechosas --------
+    const suspiciousBody = document.getElementById('suspicious-body');
+    suspiciousBody.innerHTML = '';
+
+    if (data.transacciones_sospechosas && data.transacciones_sospechosas.length > 0) {
+      data.transacciones_sospechosas.forEach((trans, index) => {
+        const row = document.createElement('tr');
+        const detailRow = document.createElement('tr');
+        detailRow.style.display = 'none';
+
+        row.innerHTML = `
+          <td>${trans.id_transaccion || 'N/A'}</td>
+          <td>$${(Number(trans.monto) || 0).toFixed(2)}</td>
+          <td>${trans.tarjeta_credito || 'N/A'}</td>
+          <td>${trans.codigo_postal || 'N/A'}</td>
+          <td>
+            <span class="badge bg-${getRiskColor(trans.nivel_riesgo)}">
+              ${trans.nivel_riesgo || 'N/A'}
+            </span>
+          </td>
+          <td>
+            <button type="button"
+                    class="btn btn-sm btn-outline-dark ver-mapa-btn mb-1"
+                    data-transaction-index="${index}">
+              <i class="bi bi-map me-1"></i>
+              Ver análisis geográfico
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary ver-explicacion">
+              Ver explicación
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger">
+              Reportar
+            </button>
+          </td>
+        `;
+
+        detailRow.innerHTML = `
+          <td colspan="6">
+            <div class="p-3 bg-light border rounded">
+              <p><strong>Tipo de fraude:</strong> ${trans.tipo_fraude || 'No determinado'}</p>
+              <p><strong>Explicación:</strong> ${trans.explicacion || 'Sin explicación disponible'}</p>
+              <p><strong>Razones:</strong></p>
+              <ul>
+                ${(trans.razones || []).map(r => `<li>${r}</li>`).join('')}
+              </ul>
+            </div>
+          </td>
+        `;
+
+        // ✅ Toggle explicación
+        row.querySelector('.ver-explicacion').addEventListener('click', () => {
+          detailRow.style.display = detailRow.style.display === 'none' ? 'table-row' : 'none';
         });
 
-        function displayResults(data) {
-            // Actualizar resumen general
-            document.getElementById('total-transactions').textContent = data.total_transacciones || 0;
-            document.getElementById('fraudulent-count').textContent = data.total_sospechosas || 0;
+        // ✅ Abrir mapa (FIX: dentro del forEach, así row existe)
+        row.querySelector('.ver-mapa-btn').addEventListener('click', function () {
+          const transactionData = data.transacciones_sospechosas[index];
+          if (!transactionData) {
+            alert('Error: No se encontraron datos de la transacción');
+            return;
+          }
 
-            // Calcular transacciones seguras
-            const safeCount = (data.total_transacciones || 0) - (data.total_sospechosas || 0);
-            document.getElementById('safe-count').textContent = safeCount > 0 ? safeCount : 0;
-            document.getElementById('suspicious-count').textContent = data.total_sospechosas || 0;
+          const dataToStore = {
+            id_transaccion: transactionData.id_transaccion || index,
+            monto: transactionData.monto || 0,
+            tarjeta_credito: transactionData.tarjeta_credito || 'N/A',
+            codigo_postal: transactionData.codigo_postal || 'N/A',
+            latitud_cliente: transactionData.latitud_cliente || 0,
+            longitud_cliente: transactionData.longitud_cliente || 0,
+            latitud_comercio: transactionData.latitud_comercio || 0,
+            longitud_comercio: transactionData.longitud_comercio || 0,
+            es_fraude: transactionData.es_fraude ?? true,
+            nivel_riesgo: transactionData.nivel_riesgo || 'alto',
+            probabilidad_fraude: transactionData.probabilidad_fraude || 0
+          };
 
-            // Mostrar alerta si hay fraudes
-            if (data.hay_alerta) {
-                fraudAlert.classList.remove('d-none');
-            }
+          const transactionId = dataToStore.id_transaccion;
+          const storageKey = `transaction_${transactionId}`;
 
-            // Mostrar transacciones sospechosas
-            const suspiciousBody = document.getElementById('suspicious-body');
-            suspiciousBody.innerHTML = '';
-
-            if (data.transacciones_sospechosas && data.transacciones_sospechosas.length > 0) {
-                data.transacciones_sospechosas.forEach((trans, index) => {
-                    const row = document.createElement('tr');
-                    const detailId = `fraud-detail-${index}`;
-
-                    row.innerHTML = `
-                        <td>${trans.id_transaccion || 'N/A'}</td>
-                        <td>$${(trans.monto || 0).toFixed(2)}</td>
-                        <td>${trans.tarjeta_credito || 'N/A'}</td>
-                        <td>${trans.codigo_postal || 'N/A'}</td>
-                        <td>
-                            <span class="badge bg-${getRiskColor(trans.nivel_riesgo)}">
-                                ${trans.nivel_riesgo || 'N/A'}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary ver-explicacion">
-                                Ver explicación
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger">
-                                Reportar
-                            </button>
-                        </td>
-                    `;
-
-                    const detailRow = document.createElement('tr');
-                    detailRow.id = detailId;
-                    detailRow.style.display = 'none';
-
-                    detailRow.innerHTML = `
-                        <td colspan="6">
-                            <div class="p-3 bg-light border rounded">
-                                <p><strong>Tipo de fraude:</strong> ${trans.tipo_fraude || 'No determinado'}</p>
-                                <p><strong>Explicación:</strong> ${trans.explicacion || 'Sin explicación disponible'}</p>
-                                <p><strong>Razones:</strong></p>
-                                <ul>
-                                    ${(trans.razones || []).map(r => `<li>${r}</li>`).join('')}
-                                </ul>
-                            </div>
-                        </td>
-                    `;
-
-                    // Toggle manual (sin Bootstrap)
-                    row.querySelector('.ver-explicacion').addEventListener('click', () => {
-                        detailRow.style.display =
-                            detailRow.style.display === 'none' ? 'table-row' : 'none';
-                    });
-
-                    suspiciousBody.appendChild(row);
-                    suspiciousBody.appendChild(detailRow);
-                });
-
-
-            } else {
-                suspiciousBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center text-muted">
-                        <i class="bi bi-check-circle me-2"></i>
-                        No se encontraron transacciones sospechosas
-                    </td>
-                </tr>
-            `;
-            }
-
-            // Mostrar todas las transacciones
-            const resultsBody = document.getElementById('results-body');
-            resultsBody.innerHTML = '';
-
-            if (data.predicciones && data.predicciones.length > 0) {
-                data.predicciones.forEach(trans => {
-                    const row = document.createElement('tr');
-                    const isFraud = trans.es_fraude;
-                    const riskLevel = trans.nivel_riesgo || 'medio';
-
-                    row.innerHTML = `
-                    <td>${trans.id_transaccion || 'N/A'}</td>
-                    <td>$${(trans.monto || 0).toFixed(2)}</td>
-                    <td>${trans.tarjeta_credito || 'N/A'}</td>
-                    <td>${trans.fecha || 'N/A'}</td>
-                    <td>
-                        <div class="progress" style="height: 20px;">
-                            <div class="progress-bar bg-${isFraud ? 'danger' : 'success'}" 
-                                 role="progressbar" 
-                                 style="width: ${(trans.probabilidad_fraude || 0) * 100}%">
-                                ${Math.round((trans.probabilidad_fraude || 0) * 100)}%
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge bg-${getRiskColor(riskLevel)}">
-                            ${riskLevel}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge bg-${isFraud ? 'danger' : 'success'}">
-                            ${isFraud ? 'FRAUDE' : 'SEGURA'}
-                        </span>
-                    </td>
-                `;
-                    resultsBody.appendChild(row);
-                });
-            }
-        }
-
-        function getRiskColor(riskLevel) {
-            const risk = riskLevel ? riskLevel.toLowerCase() : 'medio';
-            if (risk.includes('alto') || risk.includes('high')) return 'danger';
-            if (risk.includes('medio') || risk.includes('medium')) return 'warning';
-            if (risk.includes('bajo') || risk.includes('low')) return 'success';
-            return 'secondary';
-        }
-
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorAlert.classList.remove('d-none');
-        }
-
-        async function checkAPIStatus() {
-            try {
-                const response = await fetch('/api/health');
-                const data = await response.json();
-                const statusBadge = document.getElementById('api-status');
-
-                if (data.api_status === 'online') {
-                    statusBadge.className = 'badge bg-success ms-2';
-                    statusBadge.textContent = 'Conectado';
-                } else {
-                    statusBadge.className = 'badge bg-danger ms-2';
-                    statusBadge.textContent = 'Desconectado';
-                }
-            } catch (error) {
-                console.error('Error checking API status:', error);
-            }
-        }
-
-        // Validación de archivo
-        document.getElementById('csv-file').addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (file && !file.name.toLowerCase().endsWith('.csv')) {
-                showError('Por favor selecciona un archivo con extensión .csv');
-                e.target.value = '';
-            } else {
-                errorAlert.classList.add('d-none');
-            }
+          try {
+            sessionStorage.setItem(storageKey, JSON.stringify(dataToStore));
+            window.open(`/geo_visualization/${transactionId}`, '_blank');
+          } catch (err) {
+            console.error('Error al guardar en sessionStorage:', err);
+            alert('Error al preparar la visualización geográfica');
+          }
         });
-    });
+
+        suspiciousBody.appendChild(row);
+        suspiciousBody.appendChild(detailRow);
+      });
+    } else {
+      suspiciousBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center text-muted">
+            <i class="bi bi-check-circle me-2"></i>
+            No se encontraron transacciones sospechosas
+          </td>
+        </tr>
+      `;
+    }
+
+    // -------- todas --------
+    const resultsBody = document.getElementById('results-body');
+    resultsBody.innerHTML = '';
+
+    if (data.predicciones && data.predicciones.length > 0) {
+      data.predicciones.forEach(trans => {
+        const row = document.createElement('tr');
+        const isFraud = !!trans.es_fraude;
+        const riskLevel = trans.nivel_riesgo || 'medio';
+
+        row.innerHTML = `
+          <td>${trans.id_transaccion || 'N/A'}</td>
+          <td>$${(Number(trans.monto) || 0).toFixed(2)}</td>
+          <td>${trans.tarjeta_credito || 'N/A'}</td>
+          <td>${trans.fecha || 'N/A'}</td>
+          <td>
+            <div class="progress" style="height: 20px;">
+              <div class="progress-bar bg-${isFraud ? 'danger' : 'success'}"
+                   role="progressbar"
+                   style="width: ${(Number(trans.probabilidad_fraude) || 0) * 100}%">
+                ${Math.round((Number(trans.probabilidad_fraude) || 0) * 100)}%
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge bg-${getRiskColor(riskLevel)}">
+              ${riskLevel}
+            </span>
+          </td>
+          <td>
+            <span class="badge bg-${isFraud ? 'danger' : 'success'}">
+              ${isFraud ? 'FRAUDE' : 'SEGURA'}
+            </span>
+          </td>
+        `;
+        resultsBody.appendChild(row);
+      });
+    }
+  }
+
+  function getRiskColor(riskLevel) {
+    const risk = riskLevel ? String(riskLevel).toLowerCase() : 'medio';
+    if (risk.includes('alto') || risk.includes('high')) return 'danger';
+    if (risk.includes('medio') || risk.includes('medium')) return 'warning';
+    if (risk.includes('bajo') || risk.includes('low')) return 'success';
+    return 'secondary';
+  }
+
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorAlert.classList.remove('d-none');
+  }
+
+  async function checkAPIStatus() {
+    try {
+      const response = await fetch('/api/health');
+      const data = await response.json();
+      const statusBadge = document.getElementById('api-status');
+
+      if (data.api_status === 'online') {
+        statusBadge.className = 'badge bg-success ms-2';
+        statusBadge.textContent = 'Conectado';
+      } else {
+        statusBadge.className = 'badge bg-danger ms-2';
+        statusBadge.textContent = 'Desconectado';
+      }
+    } catch (error) {
+      console.error('Error checking API status:', error);
+    }
+  }
+
+  document.getElementById('csv-file').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (file && !file.name.toLowerCase().endsWith('.csv')) {
+      showError('Por favor selecciona un archivo con extensión .csv');
+      e.target.value = '';
+    } else {
+      errorAlert.classList.add('d-none');
+    }
+  });
+});
 </script>
 {% endblock %}

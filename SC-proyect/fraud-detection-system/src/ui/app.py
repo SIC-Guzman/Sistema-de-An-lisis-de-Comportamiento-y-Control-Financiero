@@ -1,3 +1,4 @@
+#app.py
 from flask import Flask, render_template, jsonify, request, redirect, url_for, flash
 import sys
 import os
@@ -339,10 +340,7 @@ def create_app():
                             page_title='Acerca del Proyecto',
                             active_page='about')
     
-    def make_report_pdf():
-        """Generar reporte PDF (función placeholder)."""
-        pass  # Implementar generación de PDF si es necesario
-    
+
     def check_api_status():
         """Verificar estado de la API."""
         try:
@@ -364,7 +362,17 @@ def create_app():
                 'code': 0,
                 'message': str(e)
             }
+
     
+    @app.route('/geo_visualization/<transaction_id>')
+    def geo_visualization(transaction_id):
+        """Visualización geográfica de una transacción específica."""
+        return render_template('geo_visualization.html',
+                            page_title='Visualización Geográfica',
+                            active_page='predict',
+                            transaction_id=transaction_id,
+                            api_url=app.config['API_BASE_URL'])
+
     @app.errorhandler(404)
     def page_not_found(e):
         return render_template('dashboard.html',
